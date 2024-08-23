@@ -40,7 +40,7 @@ fn bubble_sort(arr: &mut [i32]) {
     }
 }
 
-fn select_sort(arr: &mut [i32]) {
+fn insert_sort(arr: &mut [i32]) {
     if arr.len() >= 2 {
         let mut foreach_count = 0;
 
@@ -60,7 +60,7 @@ fn select_sort(arr: &mut [i32]) {
     }
 }
 
-fn select_sort_1(arr: &mut [i32]) {
+fn insert_sort_1(arr: &mut [i32]) {
     if arr.len() >= 2 {
         let mut foreach_count = 0;
 
@@ -74,6 +74,8 @@ fn select_sort_1(arr: &mut [i32]) {
                 let prev_val = arr.get(j - 1).unwrap();
                 if next_val < prev_val {
                     arr.swap(j, j - 1);
+                } else {
+                    break;
                 }
                 j -= 1;
             }
@@ -88,6 +90,7 @@ where
     F: FnOnce(&mut [i32]),
 {
     let start = Instant::now();
+    // println!("seq before sort:\n{:?}", arr);
     sort(arr);
     // println!("seq after sort:\n{:?}", arr);
     println!("elapsed:\n{}s", start.elapsed().as_secs());
@@ -105,8 +108,8 @@ fn main() {
     // selection sort
     // selection_sort(&mut seq);
     // bubble sort
-    // bubble_sort(&mut seq);
+    // count_time_sort(bubble_sort, &mut seq);
     // select sort
-    count_time_sort(select_sort, &mut seq.clone());
-    count_time_sort(select_sort_1, &mut seq.clone());
+    count_time_sort(insert_sort, &mut seq.clone());
+    count_time_sort(insert_sort_1, &mut seq.clone());
 }
