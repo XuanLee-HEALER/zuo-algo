@@ -195,3 +195,37 @@
 
 任何一种数据结构都是通过这两种结构组合起来
 
+## 单双链表及其反转，堆栈诠释
+
+[code](./examples/5-linked-list.rs)
+
+### 按值/引用传递参数
+
+Java除了基本类型以外都是按引用传递，但无论是按值还是按引用传递，都是对原类型的拷贝，如果是基本类型就直接拷贝值传递，而引用类型是拷贝了引用（内存地址）本身然后传递。引用类型就是值在堆上保存，栈上只保存内存地址，传递也只用地址传递
+
+### 单链表
+
+内存中定义的结构，一个结构，它包含一个值和指向下一个节点的指针。最后一个节点的下一个节点指向空（`null`）
+
+```rust
+struct ListNode {
+    val: i32,
+    next: Option<Box<ListNode>>,
+}
+```
+
+### 双链表
+
+和单链表类似，只不过除了指向下一个节点的指针还有指向上一个节点的指针
+
+```rust
+struct DoubleListNode {
+    val: i32,
+    last: Option<Box<DoubleListNode>>,
+    next: Option<Box<DoubleListNode>>,
+}
+```
+
+### 链表的反转
+
+函数签名`fn reverse(head ListNode) -> ListNode`
