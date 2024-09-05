@@ -1,7 +1,6 @@
 use std::{
     cmp,
     io::{self, BufRead, BufReader, BufWriter, Write},
-    usize,
 };
 
 fn main() {
