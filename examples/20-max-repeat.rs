@@ -17,22 +17,20 @@ fn main() {
         if head {
             t_num = ll.trim().parse().unwrap();
             head = false;
-        } else {
-            if counter < t_num {
-                let numbers: Vec<&str> = ll.split(" ").collect();
-                container.push([
-                    numbers[0].trim().parse::<i32>().unwrap_or(0),
-                    numbers[1].trim().parse::<i32>().unwrap_or(0),
-                ]);
-                counter += 1;
+        } else if counter < t_num {
+            let numbers: Vec<&str> = ll.split(" ").collect();
+            container.push([
+                numbers[0].trim().parse::<i32>().unwrap_or(0),
+                numbers[1].trim().parse::<i32>().unwrap_or(0),
+            ]);
+            counter += 1;
 
-                if counter >= t_num {
-                    println!("{}", compute(&mut container));
-                    container.clear();
-                    head = true;
-                    counter = 0;
-                    t_num = 0;
-                }
+            if counter >= t_num {
+                println!("{}", compute(&mut container));
+                container.clear();
+                head = true;
+                counter = 0;
+                t_num = 0;
             }
         }
     }
