@@ -1,5 +1,3 @@
-use std::i32;
-
 fn main() {
     let mut x = 5;
     let mut y = 8;
@@ -46,7 +44,7 @@ fn max_val_1(a: i32, b: i32) -> i32 {
 
 /// 考虑溢出
 fn max_val_2(a: i32, b: i32) -> i32 {
-    let c = a - b;
+    let c = a.wrapping_sub(b);
     let c_sign = sign(c);
 
     let a_sigh = sign(a);
@@ -99,8 +97,8 @@ fn find_double_num(arr: &[i32]) -> [i32; 2] {
 fn find_three_num(arr: &[i32], m: i32) -> i32 {
     let mut counter = [0; 32];
     for e in arr {
-        for i in 0..=31 {
-            counter[i] += (*e >> i) & 1;
+        for (i, xe) in (0..=31).enumerate() {
+            counter[i] += (*e >> xe) & 1;
         }
     }
     let mut res = 0;
