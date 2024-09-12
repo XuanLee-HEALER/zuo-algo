@@ -79,18 +79,6 @@ impl DoubleListNode {
     }
 }
 
-pub fn reverse_list_sample_1(mut head: Option<Box<ListNode>>) -> Option<Box<ListNode>> {
-    let mut prev = None;
-
-    while let Some(mut head_node) = head.take() {
-        let next = head_node.next.take();
-        head_node.next = next;
-        prev = Some(head_node);
-    }
-
-    prev
-}
-
 pub fn reverse_list_sample(head: Option<Box<ListNode>>) -> Option<Box<ListNode>> {
     let mut head = head;
     let mut prev = None;
