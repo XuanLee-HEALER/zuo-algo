@@ -10,6 +10,9 @@ fn main() {
     let ser_result = codec.serialize(Some(Rc::new(RefCell::new(root))));
     println!("{}", ser_result);
     assert_ne!(codec.deserialize(ser_result.to_owned()), None);
+
+    let build_tree = Solution::build_tree(vec![3, 9, 20, 15, 7], vec![9, 3, 15, 20, 7]);
+    println!("{:?}", codec.serialize(build_tree));
 }
 
 struct Solution;
@@ -34,6 +37,8 @@ impl TreeNode {
 }
 
 use std::cell::RefCell;
+use std::cmp::Ordering;
+use std::collections::HashMap;
 use std::rc::Rc;
 impl Solution {
     pub fn level_order(root: Option<Rc<RefCell<TreeNode>>>) -> Vec<Vec<i32>> {
@@ -198,6 +203,127 @@ impl Solution {
             }
         }
     }
+
+    pub fn build_tree(preorder: Vec<i32>, inorder: Vec<i32>) -> Option<Rc<RefCell<TreeNode>>> {
+        let mut mp = HashMap::new();
+        for (i, e) in inorder.iter().enumerate() {
+            mp.insert(*e, i);
+        }
+
+        let l = preorder.len();
+        Self::build_tree_aid(&preorder, 0, l - 1, 0, l - 1, &mp)
+    }
+
+    fn build_tree_aid(
+        preorder: &[i32],
+        pre_i: usize,
+        pre_j: usize,
+        in_i: usize,
+        in_j: usize,
+        mp: &HashMap<i32, usize>,
+    ) -> Option<Rc<RefCell<TreeNode>>> {
+        println!("{} {}", pre_i, pre_j);
+        match pre_i.cmp(&pre_j) {
+            Ordering::Less => {
+                let mut new_node = TreeNode::new(preorder[pre_i]);
+                let &head_idx = mp.get(&preorder[pre_i]).unwrap();
+                let l_num = head_idx - in_i;
+                new_node.left = Self::build_tree_aid(
+                    preorder,
+                    pre_i + 1,
+                    pre_i + l_num,
+                    in_i,
+                    head_idx - 1,
+                    mp,
+                );
+                let r_num = in_j - head_idx;
+                new_node.right = Self::build_tree_aid(
+                    preorder,
+                    pre_i + l_num + 1,
+                    pre_i + l_num + r_num,
+                    head_idx + 1,
+                    in_j,
+                    mp,
+                );
+                Some(Rc::new(RefCell::new(new_node)))
+            }
+            Ordering::Equal => Some(Rc::new(RefCell::new(TreeNode::new(preorder[pre_i])))),
+            Ordering::Greater => None,
+        }
+    }
+
+    pub fn is_complete_tree(root: Option<Rc<RefCell<TreeNode>>>) -> bool {
+        const Q_LEN: usize = 101;
+        let mut q: [Option<Rc<RefCell<TreeNode>>>; Q_LEN] = [const { None }; Q_LEN];
+        let (mut l, mut r) = (0, 0);
+        q[r] = root;
+        r += 1;
+        let mut last_non_leave = false;
+        while l < r {
+            if let Some(ref mut node) = q[l] {
+                let left = node.borrow_mut().left.take();
+                let right = node.borrow_mut().right.take();
+                if left.is_none() && right.is_some() {
+                    return false;
+                }
+
+                if last_non_leave && (left.is_some() || right.is_some()) {
+                    return false;
+                }
+
+                if left.is_none() || right.is_none() {
+                    last_non_leave = true;
+                }
+
+                l += 1;
+                if left.is_some() {
+                    q[r] = left;
+                    r += 1;
+                }
+                if right.is_some() {
+                    q[r] = right;
+                    r += 1;
+                }
+            }
+        }
+
+        true
+    }
+
+    pub fn count_nodes(root: Option<Rc<RefCell<TreeNode>>>) -> i32 {
+        if root.is_none() {
+            0
+        } else {
+            Self::count_nodes_depth(root)
+        }
+    }
+
+    fn count_nodes_depth(node: Option<Rc<RefCell<TreeNode>>>) -> i32 {
+        if let Some(node) = node {
+            let l_depth = Self::depth(node.borrow().left.clone());
+            let r_depth = Self::depth(node.borrow().right.clone());
+            match l_depth.cmp(&r_depth) {
+                Ordering::Greater => {
+                    return (1 << r_depth) + Self::count_nodes_depth(node.borrow().left.clone())
+                }
+                Ordering::Equal => {
+                    return (1 << l_depth) + Self::count_nodes_depth(node.borrow().right.clone())
+                }
+                Ordering::Less => unreachable!(),
+            }
+        } else {
+            0
+        }
+    }
+
+    fn depth(mut node: Option<Rc<RefCell<TreeNode>>>) -> i32 {
+        let mut res = 0;
+        while let Some(n) = node {
+            res += 1;
+            node = n.borrow().left.clone();
+        }
+        res
+    }
 }
 
 const QUEUE_LEN: usize = 10_001;
@@ -213,6 +339,7 @@ impl Codec {
         }
     }
 
+    /// 层序遍历序列化
     fn serialize(&mut self, root: Option<Rc<RefCell<TreeNode>>>) -> String {
         if root.is_none() {
             return "".to_owned();
@@ -248,6 +375,7 @@ impl Codec {
         res
     }
 
+    /// 层序遍历反序列化
     fn deserialize(&mut self, data: String) -> Option<Rc<RefCell<TreeNode>>> {
         if data.is_empty() {
             None
@@ -294,7 +422,7 @@ impl Codec {
         }
     }
 
-    fn serializ1(&self, root: Option<Rc<RefCell<TreeNode>>>) -> String {
+    fn serialize1(&self, root: Option<Rc<RefCell<TreeNode>>>) -> String {
         let mut res = String::new();
         Self::f1(root, &mut res);
         res
