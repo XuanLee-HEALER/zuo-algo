@@ -40,6 +40,7 @@ use std::cell::RefCell;
 use std::cmp::Ordering;
 use std::collections::HashMap;
 use std::rc::Rc;
+use std::{i32, i64};
 impl Solution {
     pub fn level_order(root: Option<Rc<RefCell<TreeNode>>>) -> Vec<Vec<i32>> {
         Self::level_order2(root)
@@ -323,6 +324,198 @@ impl Solution {
             node = n.borrow().left.clone();
         }
         res
+    }
+
+    pub fn lowest_common_ancestor(
+        root: Option<Rc<RefCell<TreeNode>>>,
+        p: Option<Rc<RefCell<TreeNode>>>,
+        q: Option<Rc<RefCell<TreeNode>>>,
+    ) -> Option<Rc<RefCell<TreeNode>>> {
+        if root.is_none() || root == p || root == q {
+            root
+        } else if let Some(root) = root {
+            let left_sub = root.borrow_mut().left.take();
+            let right_sub = root.borrow_mut().right.take();
+            let left_node = Self::lowest_common_ancestor(left_sub, p.clone(), q.clone());
+            let right_node = Self::lowest_common_ancestor(right_sub, p.clone(), q.clone());
+
+            if left_node.is_none() && right_node.is_none() {
+                None
+            } else if left_node.is_some() && right_node.is_some() {
+                Some(root)
+            } else if right_node.is_some() {
+                right_node
+            } else {
+                left_node
+            }
+        } else {
+            unreachable!()
+        }
+    }
+
+    pub fn lowest_common_ancestor_search(
+        root: Option<Rc<RefCell<TreeNode>>>,
+        p: Option<Rc<RefCell<TreeNode>>>,
+        q: Option<Rc<RefCell<TreeNode>>>,
+    ) -> Option<Rc<RefCell<TreeNode>>> {
+        if root.is_none() || root == p || root == q {
+            root
+        } else if let Some(root) = root {
+            let p_ref = p.as_ref().unwrap();
+            let q_ref = q.as_ref().unwrap();
+            let min = p_ref.borrow().val.min(q_ref.borrow().val);
+            let max = p_ref.borrow().val.max(q_ref.borrow().val);
+            let cur_val = root.borrow().val;
+
+            if cur_val > max {
+                Self::lowest_common_ancestor_search(
+                    root.borrow_mut().left.take(),
+                    p.clone(),
+                    q.clone(),
+                )
+            } else if cur_val < min {
+                Self::lowest_common_ancestor_search(
+                    root.borrow_mut().right.take(),
+                    p.clone(),
+                    q.clone(),
+                )
+            } else {
+                Some(root)
+            }
+        } else {
+            unreachable!()
+        }
+    }
+
+    pub fn path_sum(root: Option<Rc<RefCell<TreeNode>>>, target_sum: i32) -> Vec<Vec<i32>> {
+        let mut res = Vec::new();
+        let mut path_rec = Vec::new();
+        Self::iter_tree(root, target_sum, 0, &mut path_rec, &mut res);
+        res
+    }
+
+    fn iter_tree(
+        root: Option<Rc<RefCell<TreeNode>>>,
+        aim: i32,
+        sum: i32,
+        path: &mut Vec<i32>,
+        res: &mut Vec<Vec<i32>>,
+    ) {
+        if let Some(root) = root {
+            let root_ref = root.borrow();
+            path.push(root.borrow().val);
+            if root_ref.left.is_none() && root_ref.right.is_none() {
+                if root_ref.val + sum == aim {
+                    res.push(path.clone());
+                }
+            } else {
+                if root_ref.left.is_some() {
+                    Self::iter_tree(root_ref.left.clone(), aim, sum + root_ref.val, path, res);
+                }
+
+                if root_ref.right.is_some() {
+                    Self::iter_tree(root_ref.right.clone(), aim, sum + root_ref.val, path, res);
+                }
+            }
+            path.pop();
+        }
+    }
+
+    pub fn is_balanced(root: Option<Rc<RefCell<TreeNode>>>) -> bool {
+        let mut res = true;
+        Self::depth1(root, &mut res);
+        res
+    }
+
+    fn depth1(node: Option<Rc<RefCell<TreeNode>>>, ans: &mut bool) -> i32 {
+        if let Some(node) = node {
+            let left_depth = Self::depth1(node.borrow().left.clone(), ans);
+            let right_depth = Self::depth1(node.borrow().right.clone(), ans);
+            if (left_depth - right_depth).abs() > 1 {
+                *ans = false
+            }
+            left_depth.max(right_depth) + 1
+        } else {
+            0
+        }
+    }
+
+    pub fn is_valid_bst_1(mut root: Option<Rc<RefCell<TreeNode>>>) -> bool {
+        if root.is_none() {
+            return true;
+        }
+        const STACK_LEN: usize = 10_001;
+        let mut stack: [Option<Rc<RefCell<TreeNode>>>; STACK_LEN] = [const { None }; STACK_LEN];
+        let mut min = i64::MIN;
+        let (l, mut r) = (0, 0);
+
+        while let Some(node) = root {
+            let left_node = node.borrow().left.clone();
+            stack[r] = Some(node);
+            r += 1;
+            root = left_node;
+        }
+
+        while l < r {
+            if let Some(ref node) = stack[r - 1] {
+                r -= 1;
+                let cur_val = node.borrow().val;
+                if cur_val as i64 > min {
+                    min = cur_val as i64;
+                } else {
+                    return false;
+                }
+
+                let mut right_sub = node.borrow().right.clone();
+                if right_sub.is_some() {
+                    while let Some(node) = right_sub {
+                        let left_node = node.borrow().left.clone();
+                        stack[r] = Some(node);
+                        r += 1;
+                        right_sub = left_node;
+                    }
+                }
+            }
+        }
+
+        true
+    }
+
+    pub fn is_valid_bst(root: Option<Rc<RefCell<TreeNode>>>) -> bool {
+        let mut def_min = i64::MAX;
+        let mut def_max = i64::MIN;
+        Self::is_valid_bst_x(root, &mut def_min, &mut def_max)
+    }
+
+    fn is_valid_bst_x(node: Option<Rc<RefCell<TreeNode>>>, min: &mut i64, max: &mut i64) -> bool {
+        if let Some(ref node) = node {
+            let l_res = Self::is_valid_bst_x(node.borrow().left.clone(), min, max);
+            let (l_min, l_max) = (*min, *max);
+            let r_res = Self::is_valid_bst_x(node.borrow().right.clone(), min, max);
+            let (r_min, r_max) = (*min, *max);
+            let cur_val = node.borrow().val as i64;
+            if cur_val > l_max && cur_val < r_min {
+                // 更新最大最小值的方法，左边最小取小值，右边最大取大值
+                // 左边最小值默认是最大值，即可能为空，则用min更新最小值
+                // 右边最大值默认是最小值，即可能为空，则用max更新最大值
+                *min = l_min.min(cur_val);
+                *max = r_max.max(cur_val);
+                l_res && r_res
+            } else {
+                false
+            }
+        } else {
+            *min = i64::MAX;
+            *max = i64::MIN;
+            true
+        }
+    }
+
+    pub fn trim_bst(
+        root: Option<Rc<RefCell<TreeNode>>>,
+        low: i32,
+        high: i32,
+    ) -> Option<Rc<RefCell<TreeNode>>> {
     }
 }
 
