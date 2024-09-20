@@ -516,6 +516,79 @@ impl Solution {
         low: i32,
         high: i32,
     ) -> Option<Rc<RefCell<TreeNode>>> {
+        if let Some(node) = root {
+            let cur_val = node.borrow().val;
+            if cur_val >= low && cur_val <= high {
+                let new_left = Self::trim_bst(node.borrow_mut().left.take(), low, high);
+                let new_right = Self::trim_bst(node.borrow_mut().right.take(), low, high);
+                node.borrow_mut().left = new_left;
+                node.borrow_mut().right = new_right;
+                Some(node)
+            } else if cur_val < low {
+                Self::trim_bst(node.borrow_mut().right.take(), low, high)
+            } else {
+                Self::trim_bst(node.borrow_mut().left.take(), low, high)
+            }
+        } else {
+            None
+        }
+    }
+
+    pub fn rob(root: Option<Rc<RefCell<TreeNode>>>) -> i32 {
+        let mut theft_max = 0;
+        let mut not_theft_max = 0;
+        Self::rob_cur_or_not(root, &mut theft_max, &mut not_theft_max);
+        theft_max.max(not_theft_max)
+    }
+
+    /// 对于任意一棵子树，更新偷当前节点的最大值和不偷当前节点的最大值
+    fn rob_cur_or_not(
+        node: Option<Rc<RefCell<TreeNode>>>,
+        theft_max: &mut i32,
+        not_theft_max: &mut i32,
+    ) {
+        if let Some(ref node) = node {
+            let mut cur = node.borrow().val;
+            let mut n = 0;
+            Self::rob_cur_or_not(node.borrow().left.clone(), theft_max, not_theft_max);
+            cur += *not_theft_max;
+            n += *theft_max.max(not_theft_max);
+            Self::rob_cur_or_not(node.borrow().right.clone(), theft_max, not_theft_max);
+            cur += *not_theft_max;
+            n += *theft_max.max(not_theft_max);
+            *theft_max = cur;
+            *not_theft_max = n;
+        } else {
+            *theft_max = 0;
+            *not_theft_max = 0;
+        }
+    }
+
+    fn rob_cur_or_not_trash(node: Option<Rc<RefCell<TreeNode>>>, theft: bool) -> i32 {
+        if let Some(ref node) = node {
+            if theft {
+                node.borrow().val
+                    + Self::rob_cur_or_not_trash(node.borrow().left.clone(), false)
+                    + Self::rob_cur_or_not_trash(node.borrow().right.clone(), false)
+            } else {
+                (Self::rob_cur_or_not_trash(node.borrow().left.clone(), true)
+                    + Self::rob_cur_or_not_trash(node.borrow().right.clone(), false))
+                .max(
+                    Self::rob_cur_or_not_trash(node.borrow().left.clone(), false)
+                        + Self::rob_cur_or_not_trash(node.borrow().right.clone(), true),
+                )
+                .max(
+                    Self::rob_cur_or_not_trash(node.borrow().left.clone(), true)
+                        + Self::rob_cur_or_not_trash(node.borrow().right.clone(), true),
+                )
+                .max(
+                    Self::rob_cur_or_not_trash(node.borrow().left.clone(), false)
+                        + Self::rob_cur_or_not_trash(node.borrow().right.clone(), false),
+                )
+            }
+        } else {
+            0
+        }
     }
 }
 
