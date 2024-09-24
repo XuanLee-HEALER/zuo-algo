@@ -62,7 +62,7 @@ fn add_same_mod(a: i32, b: i32, mo: i32) -> i32 {
 }
 
 fn multi_same_mod(a: i32, b: i32, mo: i32) -> i32 {
-    i32::try_from((a % mo) as i64 * (b % mo) as i64 % (mo as i64)).unwrap()
+    ((a % mo) as i64 * (b % mo) as i64 % (mo as i64)) as i32
 }
 
 fn sub_same_mod(a: i32, b: i32, mo: i32) -> i32 {
