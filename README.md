@@ -443,6 +443,7 @@ public static void f(TreeNode head) {
 ## 归并排序
 
 [code1](./examples/15-merge-sort.rs)
+
 [code2](./examples/15-merge-sort-lg.rs)
 
 归并排序的基本逻辑是，对于一个无序数组，先对左边一半数据排好序，然后右边一半数据排好序，最后把两个有序子数组按照数据大小进行合并，排序完成
@@ -464,6 +465,7 @@ public static void f(TreeNode head) {
 ## 归并分治
 
 [code1](./examples/16-merge.rs)
+
 [code2](./examples/16-merge-minsum.rs)
 
 原理
@@ -618,6 +620,7 @@ BFPRT算法描述
 ## 堆结构常见题
 
 [code1](./examples/20-heap-problems.rs)
+
 [code2](./examples/20-max-repeat.rs)
 
 ### 合并K个有序链表
@@ -847,10 +850,15 @@ query(Bitset &set, int n)
 ## 链表高频题和必备技巧
 
 [code-链表相交节点](./c/list-intersection.c)
+
 [code](./examples/26-linkedlist-problems.rs)
+
 [code-拷贝带随机指针链表](./c/list-copylist.c)
+
 [code-回文结构](./c/list-palindrome.c)
+
 [code-第一个入环节点](./c/list-cycle.c)
+
 [code-链表排序](./c/list-copylist.c)
 
 注意点
@@ -920,10 +928,15 @@ query(Bitset &set, int n)
 ## 数据结构设计高频题
 
 [code-set_all哈希表](./examples/27-ds-setall-hashmap.rs)
+
 [code-lru](./c/list-lru.cpp)
+
 [code-insert/delete/random](./examples/27-ds-ins-del.rs)
+
 [code-median](./examples/27-ds-median.rs)
+
 [code-max-freq-stack](./examples/27-max-freq-stack.rs)
+
 [code-alloone](./c/list-alloone.cpp)
 
 ### `set_all`功能的哈希表
@@ -1278,3 +1291,28 @@ Least Recently Used (LRU) cache，在一个有限容器中，实现读写操作`
 
 问题描述：用r、e、d三种字符拼接字符串，返回长度为n的所有可能的字符串中，好串有多少个
 
+## 根据数据量猜解法
+
+[code-kill-monster](./c/kill-monster.cpp)
+
+[code](./examples/34-guess.rs)
+
+基本事实，C/C++运行1s，python/java/go运行1～2s可以执行的常数级别指令数量级在`10^7~10^8`，那么最好不要超过这个量级的指令，比如问题中的数组长度为`10^6`，那么一个`O(N^2)`的算法明显不会满足时间要求
+
+根据数据量猜解法的前提是
+
+1. 各个入参的最大值和范围给定，这在比赛和笔试中都会提供，面试中需要询问面试官
+2. 对于自己设计的算法，可以准确地估计出时间复杂度
+
+数据量和时间复杂度的关系，多的不记，这里主要记录两个
+
+1. `N<11`可以使用`N!`时间复杂度的算法，也就是全排列枚举
+2. `O(N*√N)`，时间复杂度比`O(N)`差，在“莫队算法”中会涉及
+
+此外入参不一定只有一个，有些复杂度可能是`O(N+M)`或者`O(N*M)`，要根据数据量来使用某种时间复杂度的算法做，只要卡住时间可以提交成功即可
+
+### 最优技能释放顺序
+
+问题描述：现在有一个打怪类型的游戏，这个游戏是这样的，你有`n`个技能，每一个技能会有一个伤害，同时若怪物低于一定的血量，则该技能可能造成双倍伤害，**每一个技能最多只能释放一次**，已知怪物有`m`点血量，现在想问你最少用几个技能能消灭掉他（血量小于等于0），`n`的范围是`[1,10]`，`m`的范围是`[0~10^6]`
+
+解法：因为`n`的范围小于10，那么直接使用全排列的方式将所有的技能组合列出来，然后挨个测试，最终选择使用技能个数最少的情况
