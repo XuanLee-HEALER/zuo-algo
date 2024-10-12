@@ -1,3 +1,5 @@
+use std::collections::HashSet;
+
 fn main() {
     let res = Solution1::find_words(
         vec![
@@ -192,11 +194,113 @@ impl Trie {
     }
 }
 
+struct FunTrie {
+    count: usize,
+    trie: Vec<[usize; 2]>,
+    high: u32,
+}
+
+impl FunTrie {
+    fn new() -> Self {
+        Self {
+            count: 1,
+            trie: vec![[0; 2]; 30_000_001],
+            high: 0,
+        }
+    }
+
+    fn build(&mut self, nums: &[i32]) {
+        let cur_max = *nums.iter().max().unwrap();
+        let high = if cur_max == 0 {
+            0
+        } else {
+            31 - cur_max.leading_zeros()
+        };
+        self.high = high;
+        for num in nums {
+            let mut cnt = 1;
+            for i in (0..=high).rev() {
+                let cur_num = (num >> i) & 1;
+                if self.trie[cnt][cur_num as usize] == 0 {
+                    self.trie[cnt][cur_num as usize] = self.count + 1;
+                    self.count += 1;
+                }
+                cnt = self.trie[cnt][cur_num as usize];
+            }
+        }
+    }
+
+    fn max_or(&self, num: i32) -> i32 {
+        let mut res = 0;
+        let mut cnt = 1;
+        for i in (0..=self.high).rev() {
+            let cur_bit = (num >> i) & 1;
+            let mut want = cur_bit ^ 1;
+            if self.trie[cnt][want as usize] == 0 {
+                want ^= 1;
+            }
+            cnt = self.trie[cnt][want as usize];
+            res |= (cur_bit ^ want) << i;
+        }
+        res
+    }
+
+    fn clear(&mut self) {
+        self.count = 1;
+        self.high = 0;
+        self.trie = vec![[0; 2]; 30_000_001];
+    }
+}
+
 struct Solution {}
 
 impl Solution {
     fn new() -> Self {
         Solution {}
+    }
+
+    pub fn find_maximum_xor(nums: Vec<i32>) -> i32 {
+        let mut t = FunTrie::new();
+        t.build(&nums);
+        let mut max = 0;
+        for num in &nums {
+            max = max.max(t.max_or(*num));
+        }
+        t.clear();
+        max
+    }
+
+    pub fn find_maximum_xor_hash(nums: Vec<i32>) -> i32 {
+        let max = *nums.iter().max().unwrap();
+        let high = if max == 0 {
+            0
+        } else {
+            31 - max.leading_zeros()
+        };
+
+        // 保存31-i+1位的结果
+        let mut ans = 0;
+        let mut set = HashSet::new();
+        // 从第i位开始找最大值
+        for i in (0..=high).rev() {
+            set.clear();
+
+            // 31-i位的好结果，这是K（最好值）
+            let better = ans | (1 << i);
+            for &num in &nums {
+                // 这是当前值，S
+                let cur_nm = (num >> i) << i;
+                // 如果存在一个值 S' = S ^ K，那么就可以达到i位的最大值
+                if set.contains(&(cur_nm ^ better)) {
+                    ans = better;
+                    break;
+                }
+                // 不存在就插入
+                set.insert(cur_nm);
+            }
+        }
+
+        ans
     }
 
     /**
@@ -231,5 +335,18 @@ impl Solution {
         }
 
         res
+    }
+}
+
+#[cfg(test)]
+mod sol_test {
+    use crate::Solution;
+
+    #[test]
+    fn test_find_maximum_xor() {
+        let res = Solution::find_maximum_xor(vec![3, 10, 5, 25, 2, 8]);
+        assert_eq!(28, res);
+        let res = Solution::find_maximum_xor(vec![0]);
+        assert_eq!(0, res);
     }
 }
