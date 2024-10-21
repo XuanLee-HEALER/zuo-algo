@@ -83,7 +83,7 @@ impl Solution {
 
             if occur == 0 {
                 // 注意这里是-1，所以是大于等于0
-                while tb[sc[l] as usize] - 1 >= 0 {
+                while tb[sc[l] as usize] > 0 {
                     tb[sc[l] as usize] -= 1;
                     l += 1;
                 }
@@ -167,7 +167,7 @@ impl Solution {
             statis[handle_arr[r] as usize] += 1;
 
             if debt == 0 {
-                while statis[handle_arr[l] as usize] - 1 >= 0 {
+                while statis[handle_arr[l] as usize] > 0 {
                     statis[handle_arr[l] as usize] -= 1;
                     l += 1;
                 }
@@ -226,27 +226,27 @@ impl Solution {
             // 用单个变量替代直接统计每个数字的出现次数！！！
             let mut satisfied = 0;
             while r < s.len() {
-                if statis[(s[r] as u8 - 'a' as u8) as usize] == 0 {
+                if statis[(s[r] as u8 - b'a') as usize] == 0 {
                     typo += 1;
                 }
-                statis[(s[r] as u8 - 'a' as u8) as usize] += 1;
+                statis[(s[r] as u8 - b'a') as usize] += 1;
 
                 // ★只能修改一次
-                if statis[(s[r] as u8 - 'a' as u8) as usize] == k {
+                if statis[(s[r] as u8 - b'a') as usize] == k {
                     satisfied += 1;
                 }
 
                 while typo > t {
-                    if statis[(s[l] as u8 - 'a' as u8) as usize] - 1 == 0 {
+                    if statis[(s[l] as u8 - b'a') as usize] - 1 == 0 {
                         typo -= 1;
                     }
 
                     // ★只能修改一次
-                    if statis[(s[l] as u8 - 'a' as u8) as usize] == k {
+                    if statis[(s[l] as u8 - b'a') as usize] == k {
                         satisfied -= 1;
                     }
 
-                    statis[(s[l] as u8 - 'a' as u8) as usize] -= 1;
+                    statis[(s[l] as u8 - b'a') as usize] -= 1;
                     l += 1;
                 }
 
