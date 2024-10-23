@@ -1,3 +1,5 @@
+use std::collections::BinaryHeap;
+
 fn main() {
     println!(
         "{}",
@@ -219,5 +221,188 @@ impl Solution {
             }
         }
         ans as i64
+    }
+
+    fn wait_queue(waiters: &[i32], m: i32) -> i32 {
+        #[derive(PartialEq, Eq)]
+        struct InnerWaiter {
+            time_point: i32,
+            efficacy: i32,
+        }
+
+        impl InnerWaiter {
+            fn new(time_point: i32, efficacy: i32) -> Self {
+                Self {
+                    time_point,
+                    efficacy,
+                }
+            }
+        }
+
+        impl PartialOrd for InnerWaiter {
+            fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
+                Some(self.cmp(other))
+            }
+        }
+
+        impl Ord for InnerWaiter {
+            fn cmp(&self, other: &Self) -> std::cmp::Ordering {
+                other.time_point.cmp(&self.time_point)
+            }
+        }
+        let mut min_heap = BinaryHeap::new();
+
+        for &waiter in waiters {
+            min_heap.push(InnerWaiter::new(0, waiter));
+        }
+
+        for _ in 0..m {
+            let mut waiter = min_heap.pop().unwrap();
+            waiter.time_point += waiter.efficacy;
+            min_heap.push(waiter);
+        }
+
+        min_heap.pop().unwrap().time_point + 1
+    }
+
+    fn wait_queue_1(waiters: &[i32], m: i32) -> i32 {
+        let mut l = 0;
+        let mut r = *waiters.iter().min().unwrap() * m;
+        let mut ans = 0;
+        let can_serve = |waiters: &[i32], limit: i32| -> bool {
+            let mut sum = 0;
+            waiters.iter().for_each(|&i| sum += limit / i + 1);
+            sum > m
+        };
+        while l <= r {
+            let m = l + ((r - l) >> 1);
+            if can_serve(waiters, m) {
+                // 下一秒就是自己
+                ans = m + 1;
+                r = m - 1;
+            } else {
+                l = m + 1;
+            }
+        }
+
+        ans
+    }
+
+    fn kill_monster(knife: &[i32], poison: &[i32], blood: i32) -> i32 {
+        let sum: i32 = poison.iter().sum();
+        let mut dp = vec![vec![vec![0; sum as usize + 1]; blood as usize + 1]; knife.len()];
+        Self::f1(knife, poison, 0, blood, 0, &mut dp)
+    }
+
+    fn f1(
+        cuts: &[i32],
+        poisons: &[i32],
+        i: i32,
+        mut r: i32,
+        p: i32,
+        dp: &mut [Vec<Vec<i32>>],
+    ) -> i32 {
+        r -= p;
+        if r <= 0 {
+            return i + 1;
+        }
+        if i == cuts.len() as i32 {
+            if p == 0 {
+                return i32::MAX;
+            } else {
+                return cuts.len() as i32 + 1 + (r + p - 1) / p;
+            }
+        }
+        if dp[i as usize][r as usize][p as usize] != 0 {
+            return dp[i as usize][r as usize][p as usize];
+        }
+
+        let p1 = if r <= cuts[i as usize] {
+            i + 1
+        } else {
+            Self::f1(cuts, poisons, i + 1, r - cuts[i as usize], p, dp)
+        };
+        let p2 = Self::f1(cuts, poisons, i + 1, r, p + poisons[i as usize], dp);
+        let ans = p1.min(p2);
+        dp[i as usize][r as usize][p as usize] = ans;
+        ans
+    }
+
+    fn kill_monster_1(knife: &[i32], poison: &[i32], blood: i32) -> i32 {
+        let mut l = 1;
+        let mut r = blood + 1;
+        let mut ans = 0;
+        let will_die = |knife: &[i32], poison: &[i32], bout: i32| -> bool {
+            let mut m = blood;
+            let valid_bout = (knife.len() as i32).min(bout);
+            for i in 0..valid_bout {
+                let max_damage = knife[i as usize].max(poison[i as usize] * (valid_bout - i - 1));
+                m -= max_damage;
+            }
+            m <= 0
+        };
+        while l <= r {
+            let m = l + ((r - l) >> 1);
+            if will_die(knife, poison, m) {
+                ans = m;
+                r = m - 1;
+            } else {
+                l = m + 1;
+            }
+        }
+        if ans == 0 {
+            i32::MAX
+        } else {
+            ans
+        }
+    }
+}
+
+#[cfg(test)]
+mod match_test {
+    use rand::{thread_rng, Rng};
+
+    #[test]
+    fn test_wait_queue() {
+        let mut rng = thread_rng();
+
+        for _ in 0..1_000 {
+            let consumer = rng.gen_range(1_000..=2_000);
+            let waiter_num = rng.gen_range(100..=200);
+            let mut waiters = Vec::new();
+            for _ in 0..waiter_num {
+                waiters.push(rng.gen_range(1..=10));
+            }
+            let r1 = super::Solution::wait_queue(&waiters, consumer);
+            let r2 = super::Solution::wait_queue_1(&waiters, consumer);
+            assert_eq!(
+                r1, r2,
+                "failed to verify the two result, heap({}) binary({})",
+                r1, r2
+            );
+        }
+    }
+
+    #[test]
+    fn test_kill_monster() {
+        let mut rng = thread_rng();
+
+        for _ in 0..100 {
+            let monster = rng.gen_range(1_000..=2_000);
+            let bouts = rng.gen_range(100..=200);
+            let mut knife = Vec::new();
+            let mut poison = Vec::new();
+            for _ in 0..bouts {
+                knife.push(rng.gen_range(30..=50));
+                poison.push(rng.gen_range(10..=20));
+            }
+            let r1 = super::Solution::kill_monster(&knife, &poison, monster);
+            let r2 = super::Solution::kill_monster_1(&knife, &poison, monster);
+            assert_eq!(
+                r1, r2,
+                "failed to verify the two result, dp({}) binary({})",
+                r1, r2
+            );
+        }
     }
 }
