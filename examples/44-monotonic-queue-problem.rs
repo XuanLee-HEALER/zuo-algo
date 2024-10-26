@@ -1,5 +1,11 @@
+use std::i32;
+
 fn main() {
     println!("{}", Solution::longest_subarray(vec![8, 2, 4, 7], 4));
+    println!(
+        "{}",
+        Solution::max_task_assign(vec![3, 2, 1], vec![0, 3, 3], 1, 1)
+    );
 }
 
 struct Solution;
@@ -73,6 +79,138 @@ impl Solution {
             max_q.pop(l);
             min_q.pop(l);
             l += 1;
+        }
+
+        ans
+    }
+
+    pub fn shortest_subarray(nums: Vec<i32>, k: i32) -> i32 {
+        let mut h = 0;
+        let mut t = 1;
+        let mut min_q = vec![(0, 0); nums.len() + 1];
+        let mut ans = i32::MAX;
+        let mut sum: i64 = 0;
+        for (i, &v) in nums.iter().enumerate() {
+            sum += v as i64;
+            let cur = (i + 1, sum);
+            while h < t && cur.1 - min_q[h].1 >= k as i64 {
+                ans = ans.min((cur.0 - min_q[h].0) as i32);
+                h += 1;
+            }
+
+            while h < t && cur.1 <= min_q[t - 1].1 {
+                t -= 1;
+            }
+
+            min_q[t] = cur;
+            t += 1;
+        }
+
+        if ans == i32::MAX {
+            -1
+        } else {
+            ans
+        }
+    }
+
+    pub fn find_max_value_of_equation(points: Vec<Vec<i32>>, k: i32) -> i32 {
+        let mut h = 0;
+        let mut t = 0;
+        let mut max_q = vec![(0, 0); points.len()];
+        let mut ans = i32::MIN;
+
+        for point in &points {
+            while t > h && point[0] - max_q[h].0 > k {
+                h += 1;
+            }
+
+            if t > h {
+                ans = ans.max(max_q[h].1 - max_q[h].0 + point[0] + point[1]);
+            }
+
+            while t > h && point[1] - point[0] >= max_q[t - 1].1 - max_q[t - 1].0 {
+                t -= 1;
+            }
+
+            max_q[t] = (point[0], point[1]);
+            t += 1;
+        }
+
+        ans
+    }
+
+    pub fn max_task_assign(tasks: Vec<i32>, workers: Vec<i32>, pills: i32, strength: i32) -> i32 {
+        const MAX_PILLS: i32 = 50_001;
+        let mut tasks = tasks;
+        let mut workers = workers;
+        tasks.sort_unstable();
+        workers.sort_unstable();
+        let tasks_num = tasks.len();
+        let workers_num = workers.len();
+        let mut min_q = vec![0; tasks.len()];
+        let mut h = 0;
+        let mut t = 0;
+        let mut need_pills =
+            |mut tl: usize, tr: usize, mut wl: usize, wr: usize, limit: i32| -> i32 {
+                h = 0;
+                t = 0;
+                let mut task_cnt = 0;
+                let mut need_pills = 0;
+                while wl <= wr {
+                    while tl <= tr {
+                        if tasks[tl] <= workers[wl] {
+                            min_q[t] = tl;
+                            t += 1;
+                            tl += 1;
+                        } else {
+                            break;
+                        }
+                    }
+
+                    if t > h && tasks[min_q[h]] <= workers[wl] {
+                        h += 1;
+                    } else {
+                        while tl <= tr {
+                            if tasks[tl] <= workers[wl] + strength {
+                                min_q[t] = tl;
+                                t += 1;
+                                tl += 1;
+                            } else {
+                                break;
+                            }
+                        }
+
+                        if t > h && tasks[min_q[t - 1]] <= workers[wl] + strength {
+                            t -= 1;
+                            need_pills += 1;
+                        } else {
+                            return MAX_PILLS;
+                        }
+                    }
+
+                    task_cnt += 1;
+                    wl += 1;
+                }
+
+                if task_cnt >= limit {
+                    need_pills
+                } else {
+                    MAX_PILLS
+                }
+            };
+
+        let mut l = 0;
+        let mut r = tasks_num.min(workers_num);
+        let mut ans = 0;
+
+        while l <= r {
+            let m = l + ((r - l) >> 1);
+            if need_pills(0, m - 1, workers_num - m, workers_num - 1, m as i32) > pills {
+                r = m - 1;
+            } else {
+                ans = ans.max(m as i32);
+                l = m + 1;
+            }
         }
 
         ans
