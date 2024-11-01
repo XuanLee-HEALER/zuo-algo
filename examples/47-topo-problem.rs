@@ -7,6 +7,10 @@ fn main() {
         "alien ({})",
         Solution::alien_order(vec!["z".into(), "z".into(),])
     );
+    println!(
+        "stamp {:?}",
+        Solution::moves_to_stamp("uskh".into(), "uskhkhhskh".into())
+    );
 }
 
 struct Solution;
@@ -119,6 +123,68 @@ impl Solution {
             ans
         } else {
             "".into()
+        }
+    }
+
+    pub fn moves_to_stamp(stamp: String, target: String) -> Vec<i32> {
+        let stamp: Vec<char> = stamp.chars().collect();
+        let target: Vec<char> = target.chars().collect();
+        let n = stamp.len();
+        let m = target.len();
+        let pn = m - n + 1;
+        let mut graph = vec![vec![0; 0]; m + 1];
+        let mut indegree = vec![0; m + 1];
+        for (i, _) in target.iter().take(pn).enumerate() {
+            let mut ti = i;
+            for &c in &stamp {
+                if c != target[ti] {
+                    graph[ti].push(i);
+                    indegree[i] += 1;
+                }
+                ti += 1;
+            }
+        }
+
+        let mut q = vec![0; m + 1];
+        let mut l = 0;
+        let mut r = 0;
+        let mut ans = vec![0; m + 1];
+        let mut cnt = 0;
+
+        for (i, &e) in indegree.iter().take(pn).enumerate() {
+            if e == 0 {
+                q[r] = i;
+                r += 1;
+            }
+        }
+
+        let mut visited = vec![false; m + 1];
+        while r > l {
+            let cur_loc = q[l];
+            ans[cnt] = cur_loc as i32;
+            for (j, e) in graph.iter().skip(cur_loc).take(n).enumerate() {
+                if !visited[j + cur_loc] {
+                    for &x in e {
+                        indegree[x] -= 1;
+                        if indegree[x] == 0 {
+                            q[r] = x;
+                            r += 1;
+                        }
+                    }
+                    visited[j + cur_loc] = true;
+                }
+            }
+
+            cnt += 1;
+            l += 1;
+        }
+
+        if cnt == pn {
+            let ans = &mut ans[..cnt];
+            ans.reverse();
+            ans.into()
+        } else {
+            vec![]
         }
     }
 }
