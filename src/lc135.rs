@@ -84,9 +84,9 @@ impl Solution {
 }
 
 #[cfg(test)]
-mod candy_test {
+mod test_lc135 {
     #[test]
-    fn test_candy1() {
+    fn test_lc135() {
         // 18
         let v1 = vec![8, 6, 2, 1, 9, 3, 5, 4, 7];
         // 16
@@ -97,7 +97,7 @@ mod candy_test {
     }
 
     #[test]
-    fn test_candy2() {
+    fn test_lc135_1() {
         // 18
         let v1 = vec![8, 6, 2, 1, 9, 3, 5, 4, 7];
         // 16
