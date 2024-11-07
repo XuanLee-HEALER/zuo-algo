@@ -1,4 +1,7 @@
-use std::collections::HashSet;
+use std::{
+    cmp::Ordering,
+    collections::{HashMap, HashSet, VecDeque},
+};
 
 fn main() {
     println!(
@@ -26,7 +29,21 @@ fn main() {
             vec![1, 1, 1, 1],
             vec![2, 2, 2, 2]
         ])
-    )
+    );
+    for ans in Solution::find_ladders(
+        "hit".into(),
+        "cog".into(),
+        vec![
+            "hot".into(),
+            "dot".into(),
+            "dog".into(),
+            "lot".into(),
+            "log".into(),
+            "cog".into(),
+        ],
+    ) {
+        println!("=> {:?}", ans);
+    }
 }
 
 struct Solution;
@@ -342,5 +359,238 @@ impl Solution {
         }
 
         ans
+    }
+
+    pub fn trap_rain_water(height_map: Vec<Vec<i32>>) -> i32 {
+        let n = height_map.len();
+        let m = height_map[0].len();
+        let mut min_heap = MinHeap::new(n * m);
+        let mut visited = vec![vec![false; m]; n];
+        for (i, sub) in height_map.iter().enumerate() {
+            for (j, &e) in sub.iter().enumerate() {
+                if i == 0 || i == n - 1 || j == 0 || j == m - 1 {
+                    min_heap.push(WaterLine(i, j, e));
+                    visited[i][j] = true;
+                }
+            }
+        }
+
+        let mut ans = 0;
+
+        while !min_heap.is_empty() {
+            let WaterLine(i, j, w) = min_heap.pop();
+            ans += w - height_map[i][j];
+            if i > 0 && !visited[i - 1][j] {
+                visited[i - 1][j] = true;
+                min_heap.push(WaterLine(i - 1, j, w.max(height_map[i - 1][j])));
+            }
+            if i + 1 < n && !visited[i + 1][j] {
+                visited[i + 1][j] = true;
+                min_heap.push(WaterLine(i + 1, j, w.max(height_map[i + 1][j])));
+            }
+            if j > 0 && !visited[i][j - 1] {
+                visited[i][j - 1] = true;
+                min_heap.push(WaterLine(i, j - 1, w.max(height_map[i][j - 1])));
+            }
+            if j + 1 < m && !visited[i][j + 1] {
+                visited[i][j + 1] = true;
+                min_heap.push(WaterLine(i, j + 1, w.max(height_map[i][j + 1])));
+            }
+        }
+
+        ans
+    }
+
+    pub fn find_ladders(
+        begin_word: String,
+        end_word: String,
+        word_list: Vec<String>,
+    ) -> Vec<Vec<String>> {
+        let mut base = word_list.iter().collect::<HashSet<&String>>();
+        if !base.contains(&end_word) {
+            return vec![];
+        }
+        let _ = base.remove(&begin_word);
+
+        let p_words = |word: &str| -> Vec<String> {
+            let mut ans = Vec::new();
+            let mut cs = word.chars().collect::<Vec<char>>();
+            for (i, c) in word.char_indices() {
+                let old_c = c;
+                for j in 0..=25_u8 {
+                    let rc = (b'a' + j) as char;
+                    if rc == old_c {
+                        continue;
+                    }
+                    cs[i] = rc;
+                    ans.push(cs.iter().collect::<String>());
+                }
+                cs[i] = old_c;
+            }
+            ans
+        };
+
+        let mut cur_level = HashSet::new();
+        let mut next_level = HashSet::new();
+        let mut graph = HashMap::new();
+
+        cur_level.insert(begin_word.clone());
+        let mut is_find = false;
+        while !cur_level.is_empty() {
+            // 每次遍历过的单词不再参与后续遍历
+            base.retain(|&e| !cur_level.contains(e));
+            for word in cur_level.drain() {
+                let next_words = p_words(&word);
+                for nw in next_words {
+                    if base.contains(&nw) {
+                        if nw == end_word {
+                            is_find = true;
+                        }
+                        graph
+                            .entry(nw.clone())
+                            .and_modify(|e: &mut Vec<String>| {
+                                e.push(word.clone());
+                            })
+                            .or_insert(vec![word.clone()]);
+                        next_level.insert(nw);
+                    }
+                }
+            }
+
+            if is_find {
+                break;
+            } else {
+                cur_level = next_level.clone();
+                next_level.clear();
+            }
+        }
+
+        let mut ans = Vec::new();
+        let mut buf = VecDeque::new();
+        if is_find {
+            Self::collect_path(&graph, &begin_word, &end_word, &mut buf, &mut ans);
+        }
+
+        ans
+    }
+
+    fn collect_path(
+        rel: &HashMap<String, Vec<String>>,
+        begin_word: &str,
+        end_word: &str,
+        buf: &mut VecDeque<String>,
+        ans: &mut Vec<Vec<String>>,
+    ) {
+        buf.push_front(end_word.to_string());
+        if begin_word == end_word {
+            ans.push(buf.iter().map(|s| s.to_string()).collect());
+        } else {
+            for nw in rel[end_word].iter() {
+                Self::collect_path(rel, begin_word, nw, buf, ans);
+            }
+        }
+        buf.pop_front();
+    }
+}
+
+#[derive(Clone, Copy, Default)]
+struct WaterLine(usize, usize, i32);
+impl Ord for WaterLine {
+    fn cmp(&self, other: &Self) -> Ordering {
+        self.2.cmp(&other.2)
+    }
+}
+
+impl PartialOrd for WaterLine {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        Some(self.cmp(other))
+    }
+}
+
+impl PartialEq for WaterLine {
+    fn eq(&self, other: &Self) -> bool {
+        self.2 == other.2
+    }
+}
+
+impl Eq for WaterLine {}
+
+struct MinHeap<T: Ord>
+where
+    T: Ord,
+{
+    heap: Vec<T>,
+    size: usize,
+}
+
+impl<T> MinHeap<T>
+where
+    T: Copy + Clone + Ord + Default,
+{
+    fn new(n: usize) -> Self {
+        Self {
+            heap: vec![T::default(); n],
+            size: 0,
+        }
+    }
+
+    fn push(&mut self, v: T) {
+        self.heap_insert(v);
+    }
+
+    fn pop(&mut self) -> T {
+        let res = self.heap[0];
+        self.heap.swap(0, self.size - 1);
+        self.size -= 1;
+        self.heapify(0);
+        res
+    }
+
+    fn heapify(&mut self, idx: usize) {
+        let mut idx = idx;
+        while idx < self.size {
+            let l_idx = (idx << 1) + 1;
+            if l_idx < self.size && l_idx + 1 < self.size {
+                let a_idx = if self.heap[l_idx].cmp(&self.heap[l_idx + 1]) == Ordering::Less {
+                    l_idx
+                } else {
+                    l_idx + 1
+                };
+                if self.heap[idx].cmp(&self.heap[a_idx]) == Ordering::Greater {
+                    self.heap.swap(idx, a_idx);
+                    idx = a_idx;
+                } else {
+                    break;
+                }
+            } else if l_idx < self.size {
+                if self.heap[idx].cmp(&self.heap[l_idx]) == Ordering::Greater {
+                    self.heap.swap(idx, l_idx);
+                    idx = l_idx
+                } else {
+                    break;
+                };
+            } else {
+                break;
+            }
+        }
+    }
+
+    fn heap_insert(&mut self, v: T) {
+        self.heap[self.size] = v;
+        self.size += 1;
+        let mut old_idx = self.size - 1;
+        while old_idx > 0 {
+            let p_idx = (old_idx - 1) >> 1;
+            if self.heap[old_idx].cmp(&self.heap[p_idx]) == Ordering::Less {
+                self.heap.swap(old_idx, p_idx);
+                old_idx = p_idx;
+            } else {
+                break;
+            }
+        }
+    }
+
+    fn is_empty(&self) -> bool {
+        self.size == 0
     }
 }
