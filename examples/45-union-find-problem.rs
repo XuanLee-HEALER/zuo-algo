@@ -51,6 +51,16 @@ fn main() {
             ],
             vec![8, 4, 2, 0]
         )
+    );
+    println!(
+        "swim {}",
+        Solution::swim_in_water(vec![
+            vec![0, 1, 2, 3, 4],
+            vec![24, 23, 22, 21, 5],
+            vec![12, 13, 14, 15, 16],
+            vec![11, 17, 18, 19, 20],
+            vec![10, 9, 8, 7, 6]
+        ])
     )
 }
 
@@ -260,6 +270,79 @@ impl Solution {
         }
 
         ans
+    }
+
+    pub fn swim_in_water(grid: Vec<Vec<i32>>) -> i32 {
+        let n = grid.len();
+        let mut union_find = (0..n * n).collect::<Vec<usize>>();
+        let mut l = grid[0][0] as usize;
+        let mut r = n * n - 1;
+        let mut ans = -1;
+        while l <= r {
+            let m = l + ((r - l) >> 1);
+            Self::union_all(&grid, n, &mut union_find, m as i32);
+            if Self::same_set(&mut union_find, 0, n * n - 1) {
+                ans = m as i32;
+                if m == 0 {
+                    break;
+                }
+                r = m - 1;
+            } else {
+                l = m + 1;
+            }
+            union_find = (0..n * n).collect::<Vec<usize>>();
+        }
+
+        ans
+    }
+
+    fn union_all(grid: &[Vec<i32>], n: usize, union_find: &mut [usize], s: i32) {
+        Self::try_union(grid, n, union_find, 0, 0, s);
+    }
+
+    fn try_union(
+        grid: &[Vec<i32>],
+        n: usize,
+        union_find: &mut [usize],
+        i: usize,
+        j: usize,
+        s: i32,
+    ) {
+        let uf_idx = i * n + j;
+        if uf_idx == 0 || (grid[i][j] <= s && !Self::same_set(union_find, 0, uf_idx)) {
+            Self::union(union_find, 0, uf_idx);
+            if i > 0 {
+                Self::try_union(grid, n, union_find, i - 1, j, s);
+            }
+            if i + 1 < n {
+                Self::try_union(grid, n, union_find, i + 1, j, s);
+            }
+            if j > 0 {
+                Self::try_union(grid, n, union_find, i, j - 1, s);
+            }
+            if j + 1 < n {
+                Self::try_union(grid, n, union_find, i, j + 1, s);
+            }
+        }
+    }
+
+    fn same_set(union_find: &mut [usize], v1: usize, v2: usize) -> bool {
+        Self::find(union_find, v1) == Self::find(union_find, v2)
+    }
+
+    fn find(union_find: &mut [usize], v1: usize) -> usize {
+        if union_find[v1] != v1 {
+            union_find[v1] = Self::find(union_find, union_find[v1]);
+        }
+        union_find[v1]
+    }
+
+    fn union(union_find: &mut [usize], v1: usize, v2: usize) {
+        let b_v1 = Self::find(union_find, v1);
+        let b_v2 = Self::find(union_find, v2);
+        if b_v1 != b_v2 {
+            union_find[b_v1] = b_v2;
+        }
     }
 }
 
