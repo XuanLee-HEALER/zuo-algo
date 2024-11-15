@@ -9,6 +9,10 @@ fn main() {
         Solution::hard_num_decodings(String::from("7*9*3*6*3*0*5*4*9*7*3*7*1*8*3*2*0*0*6*")),
         Solution::hard_num_decodings_4(String::from("7*9*3*6*3*0*5*4*9*7*3*7*1*8*3*2*0*0*6*"))
     );
+    println!(
+        "longest {}",
+        Solution::longest_valid_parentheses(String::from("()(())"))
+    );
 }
 
 struct Solution;
@@ -410,5 +414,110 @@ impl Solution {
             next = cur;
         }
         next as i32
+    }
+
+    pub fn is_ugly(n: i32) -> bool {
+        match n {
+            1 => true,
+            n if n > 1 => {
+                (n % 2 == 0 && Self::is_ugly(n / 2))
+                    || (n % 3 == 0 && Self::is_ugly(n / 3))
+                    || (n % 5 == 0 && Self::is_ugly(n / 5))
+                // loop {
+                //     if n == 1 {
+                //         return true;
+                //     }
+                //     if n % 2 == 0 {
+                //         n /= 2
+                //     } else if n % 3 == 0 {
+                //         n /= 3
+                //     } else if n % 5 == 0 {
+                //         n /= 5
+                //     } else {
+                //         break;
+                //     }
+                // }
+                // false
+            }
+            _ => false,
+        }
+    }
+
+    pub fn nth_ugly_number(n: i32) -> i32 {
+        let n = n as usize;
+        let mut dp = vec![1; n + 1];
+        let (mut i2, mut i3, mut i5) = (1, 1, 1);
+        for i in 2..n + 1 {
+            let v2 = dp[i2] * 2;
+            let v3 = dp[i3] * 3;
+            let v5 = dp[i5] * 5;
+            dp[i] = v2.min(v3).min(v5);
+            if v2 == dp[i] {
+                i2 += 1;
+            }
+            if v3 == dp[i] {
+                i3 += 1;
+            }
+            if v5 == dp[i] {
+                i5 += 1;
+            }
+        }
+        dp[n]
+    }
+
+    pub fn longest_valid_parentheses(s: String) -> i32 {
+        let s = s.chars().collect::<Vec<char>>();
+        let n = s.len();
+        let mut dp = vec![0; n];
+        let mut max = 0;
+        for i in 1..n {
+            if let Some(mut p) = i.checked_sub(dp[i - 1]) {
+                if p >= 1 && s[i] == ')' {
+                    p -= 1;
+                    if s[p] == '(' {
+                        dp[i] += 2 + dp[i - 1];
+                        if p > 0 && dp[p - 1] > 0 {
+                            dp[i] += dp[p - 1]
+                        }
+                    }
+                }
+            }
+            max = max.max(dp[i])
+        }
+        max as i32
+    }
+
+    pub fn find_substring_in_wrapround_string(s: String) -> i32 {
+        let s = s
+            .chars()
+            .map(|c| (c as u8 - b'a') as usize)
+            .collect::<Vec<usize>>();
+        let mut dp = [0; 26];
+        let mut rec = 1;
+        dp[s[0]] = rec;
+        for (i, &e) in s.iter().skip(1).enumerate() {
+            dp[e] = dp[e].max(if (e == 0 && s[i] == 25) || s[i] + 1 == e {
+                rec += 1;
+                rec
+            } else {
+                rec = 1;
+                rec
+            })
+        }
+        dp.iter().sum::<i32>()
+    }
+
+    pub fn distinct_subseq_ii(s: String) -> i32 {
+        const MOD: i32 = 1_000_000_007;
+        let mut dp = [0; 26];
+        let s = s.as_bytes();
+        let mut all = 1;
+        for &c in s {
+            let c_idx = (c - b'a') as usize;
+            let new_add = (all - dp[c_idx] + MOD) % MOD;
+            dp[c_idx] = (dp[c_idx] + new_add) % MOD;
+            all = (all + new_add) % MOD;
+        }
+        (all - 1 + MOD) % MOD
     }
 }
