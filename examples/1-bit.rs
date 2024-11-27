@@ -1,10 +1,9 @@
 fn print_i32_binary(num: i32) {
     let mut res = String::new();
-    for i in (0..31).rev() {
+    for i in (0..32).rev() {
         match num & (1 << i) {
-            v if v > 0 => res.push('1'),
-            v if v <= 0 => res.push('0'),
-            _ => panic!("unbelievable"),
+            0 => res.push('0'),
+            _ => res.push('1'),
         }
     }
 
