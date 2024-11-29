@@ -69,7 +69,7 @@ fn binary_search(arr: &[i32], n: i32) -> bool {
     let mut end = len - 1;
     while beg <= end {
         let mid = beg + ((end - beg) >> 1);
-        match arr.get(mid).unwrap().cmp(&n) {
+        match arr[mid].cmp(&n) {
             std::cmp::Ordering::Equal => return true,
             std::cmp::Ordering::Less => {
                 beg = mid + 1;

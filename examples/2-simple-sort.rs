@@ -27,8 +27,8 @@ fn bubble_sort(arr: &mut [i32]) {
             let mut i = 0;
             let mut j = 1;
             while j <= end {
-                let prev = arr.get(i).unwrap();
-                let next = arr.get(j).unwrap();
+                let prev = arr[i];
+                let next = arr[j];
                 if prev > next {
                     arr.swap(i, j);
                 }
@@ -48,8 +48,8 @@ fn insert_sort(arr: &mut [i32]) {
             foreach_count += 1;
             for j in (0..=i - 1).rev() {
                 foreach_count += 1;
-                let next_val = arr.get(j + 1).unwrap();
-                let prev_val = arr.get(j).unwrap();
+                let next_val = arr[j + 1];
+                let prev_val = arr[j];
                 if next_val < prev_val {
                     arr.swap(j, j + 1);
                 }
@@ -85,6 +85,23 @@ fn insert_sort_1(arr: &mut [i32]) {
     }
 }
 
+fn insert_sort_2(arr: &mut [i32]) {
+    let n = arr.len();
+    if n > 1 {
+        for i in 0..n - 1 {
+            let mut j = i + 1;
+            while j > 0 {
+                if arr[j] <= arr[j - 1] {
+                    arr.swap(j, j - 1);
+                    j -= 1;
+                } else {
+                    break;
+                }
+            }
+        }
+    }
+}
+
 fn count_time_sort<F>(sort: F, arr: &mut [i32])
 where
     F: FnOnce(&mut [i32]),
@@ -110,6 +127,10 @@ fn main() {
     // bubble sort
     // count_time_sort(bubble_sort, &mut seq);
     // select sort
-    count_time_sort(insert_sort, &mut seq.clone());
-    count_time_sort(insert_sort_1, &mut seq.clone());
+    // count_time_sort(insert_sort, &mut seq.clone());
+    // count_time_sort(insert_sort_1, &mut seq.clone());
+    let mut seq1 = seq.clone();
+    insert_sort_2(&mut seq1);
+    seq.sort();
+    assert_eq!(seq1, seq);
 }
