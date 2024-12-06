@@ -17,7 +17,7 @@ impl ListNode {
 
 impl PartialOrd for ListNode {
     fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
-        other.val.partial_cmp(&self.val)
+        Some(other.cmp(self))
     }
 }
 
@@ -32,10 +32,8 @@ struct Solution;
 impl Solution {
     pub fn merge_k_lists(lists: Vec<Option<Box<ListNode>>>) -> Option<Box<ListNode>> {
         let mut small_heap = collections::BinaryHeap::new();
-        for head in lists {
-            if let Some(head) = head {
-                small_heap.push(*head);
-            }
+        for head in lists.into_iter().flatten() {
+            small_heap.push(*head);
         }
         if small_heap.is_empty() {
             return None;
