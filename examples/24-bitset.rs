@@ -157,7 +157,7 @@ mod test {
                     set1.add(n);
                     set2.insert(n);
                 }
-                n if n >= 333 && n < 666 => {
+                n if (333..666).contains(&n) => {
                     set1.remove(n);
                     set2.remove(&n);
                 }

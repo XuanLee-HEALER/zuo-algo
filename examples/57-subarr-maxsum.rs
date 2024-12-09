@@ -24,7 +24,8 @@ fn main() {
             vec![-3, 7, 6, -2, 4],
             vec![6, -4, -4, 8, -7]
         ])
-    )
+    );
+    println!("max product: {}", Solution::max_product(vec![2, 3, -2, 4]))
 }
 
 struct Solution;
@@ -252,5 +253,148 @@ impl Solution {
             aid.fill(0);
         }
         res
+    }
+
+    pub fn max_product(nums: Vec<i32>) -> i32 {
+        let mut res = nums[0];
+        let mut pre_max = res;
+        let mut pre_min = res;
+        for &i in nums.iter().skip(1) {
+            let cur_max = i.max(i * pre_max).max(i * pre_min);
+            let cur_min = i.min(i * pre_min).min(i * pre_max);
+            pre_max = cur_max;
+            pre_min = cur_min;
+            if cur_max > res {
+                res = cur_max;
+            }
+        }
+        res
+    }
+}
+
+#[cfg(test)]
+mod maxsum_test {
+    use rand::{thread_rng, Rng};
+
+    fn sub_seq_mod_by_7(nums: &[i32]) -> i32 {
+        let n = nums.len();
+        let mut dp = vec![vec![-1; 7]; n + 1];
+        dp[0][0] = 0;
+        for i in 1..=n {
+            for j in 0..7 {
+                dp[i][j] = dp[i - 1][j];
+                if dp[i - 1][(7 + j - (nums[i - 1] as usize % 7)) % 7] != -1 {
+                    dp[i][j] = dp[i][j]
+                        .max(dp[i - 1][(7 + j - (nums[i - 1] as usize % 7)) % 7] + nums[i - 1])
+                }
+            }
+        }
+        dp[n][0]
+    }
+
+    fn sub_seq_mod_by_7_force(nums: &[i32]) -> i32 {
+        let mut sum = 0;
+        let mut max = -1;
+        sub_seq_max(nums, 0, &mut sum, &mut max)
+    }
+
+    fn sub_seq_max(nums: &[i32], i: usize, sum: &mut i32, max: &mut i32) -> i32 {
+        if i == nums.len() {
+            if *sum % 7 == 0 && *sum > *max {
+                *max = *sum
+            }
+            *max
+        } else {
+            let max1 = sub_seq_max(nums, i + 1, sum, max);
+            *sum += nums[i];
+            let max2 = sub_seq_max(nums, i + 1, sum, max);
+            *sum -= nums[i];
+            max1.max(max2)
+        }
+    }
+
+    #[test]
+    fn test_mod_7() {
+        let times = 2_000;
+        let mut rng = thread_rng();
+        for _ in 0..times {
+            let arr_len = rng.gen_range(0..=20);
+            let mut arr = Vec::with_capacity(arr_len);
+            for _ in 0..arr_len {
+                arr.push(rng.gen_range(0..=100_000));
+            }
+            let r1 = sub_seq_mod_by_7_force(&arr);
+            let r2 = sub_seq_mod_by_7(&arr);
+            assert_eq!(r1, r2, "correct value: {} verify value: {}", r1, r2)
+        }
+    }
+
+    fn magic_roll(nums: &[i32]) -> i32 {
+        let n = nums.len();
+        let p1 = nums.iter().sum::<i32>();
+        let mut dp1 = vec![0; n];
+        let mut sum = nums[0];
+        let mut max_sum = sum.max(0);
+        for i in 1..n {
+            dp1[i] = (dp1[i - 1] + nums[i]).max(max_sum);
+            sum += nums[i];
+            max_sum = max_sum.max(sum);
+        }
+        let p2 = dp1[n - 1];
+        let mut dp2 = vec![0; n];
+        let mut sum = nums[n - 1];
+        max_sum = sum.max(0);
+        for i in (0..n - 1).rev() {
+            dp2[i] = (dp2[i + 1] + nums[i]).max(max_sum);
+            sum += nums[i];
+            max_sum = max_sum.max(sum);
+        }
+        let mut p3 = 0;
+        for i in 0..n - 1 {
+            p3 = p3.max(dp1[i] + dp2[i + 1]);
+        }
+        p1.max(p2).max(p3)
+    }
+
+    fn magic_roll_force(nums: &[i32]) -> i32 {
+        let mut res = i32::MIN;
+        for i in 0..nums.len() {
+            res = res.max(magic_roll_sub(nums, 0, i) + magic_roll_sub(nums, i + 1, nums.len() - 1))
+        }
+        res
+    }
+
+    fn magic_roll_sub(nums: &[i32], i: usize, j: usize) -> i32 {
+        let mut max = nums[i..=j].iter().sum::<i32>();
+        for ti in i..=j {
+            for tj in ti..=j {
+                let mut t_sum = 0;
+                for k in i..=j {
+                    if k < ti || k > tj {
+                        t_sum += nums[k];
+                    }
+                }
+                max = max.max(t_sum)
+            }
+        }
+
+        max
+    }
+
+    #[test]
+    fn test_magic_roll() {
+        let times = 2_000;
+        let mut rng = thread_rng();
+        for _ in 0..times {
+            let arr_len = rng.gen_range(1..=20);
+            let mut arr = Vec::with_capacity(arr_len);
+            for _ in 0..arr_len {
+                arr.push(rng.gen_range(-100_000..=100_000));
+            }
+            // println!("arr: {:?}", arr);
+            let r1 = magic_roll_force(&arr);
+            let r2 = magic_roll(&arr);
+            assert_eq!(r1, r2, "correct value: {} verify value: {}", r1, r2)
+        }
     }
 }

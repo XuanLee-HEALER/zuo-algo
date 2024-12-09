@@ -163,7 +163,7 @@ mod test_min_heap {
         mhp.push(4);
         mhp.push(9);
         mhp.push(2);
-        mhp.push(-1);
+        mhp.push(1);
         mhp.push(14);
         mhp.push(22);
         while mhp.len > 0 {

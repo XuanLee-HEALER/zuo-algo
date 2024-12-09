@@ -187,6 +187,18 @@ impl Solution {
     }
 }
 
+fn permutation(arr: &mut [i32], cur_idx: usize) {
+    if cur_idx == arr.len() - 1 {
+        println!("{:?}", arr)
+    } else {
+        for i in cur_idx..arr.len() {
+            arr.swap(cur_idx, i);
+            permutation(arr, cur_idx + 1);
+            arr.swap(cur_idx, i);
+        }
+    }
+}
+
 #[cfg(test)]
 mod solution_test {
     #[test]
@@ -220,17 +232,5 @@ mod solution_test {
         //     2,
         //     super::Solution::superpalindromes_in_range("1".into(), "5".into())
         // );
-    }
-}
-
-fn permutation(arr: &mut [i32], cur_idx: usize) {
-    if cur_idx == arr.len() - 1 {
-        println!("{:?}", arr)
-    } else {
-        for i in cur_idx..arr.len() {
-            arr.swap(cur_idx, i);
-            permutation(arr, cur_idx + 1);
-            arr.swap(cur_idx, i);
-        }
     }
 }
