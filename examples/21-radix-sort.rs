@@ -41,13 +41,13 @@ fn radix_sort(arr: &mut [i32], n: i32, base: i32) {
             bit_arr[i] += bit_arr[i - 1];
         }
 
-        for i in (0..=arr.len() - 1).rev() {
+        for i in (0..arr.len()).rev() {
             let d = (arr[i] / offset) % base;
             aid[(bit_arr[d as usize] - 1) as usize] = arr[i];
             bit_arr[d as usize] -= 1;
         }
 
-        offset *= 10;
+        offset *= base;
 
         arr.copy_from_slice(&aid);
         bit_arr.fill(0);

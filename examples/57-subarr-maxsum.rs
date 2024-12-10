@@ -25,7 +25,11 @@ fn main() {
             vec![6, -4, -4, 8, -7]
         ])
     );
-    println!("max product: {}", Solution::max_product(vec![2, 3, -2, 4]))
+    println!("max product: {}", Solution::max_product(vec![2, 3, -2, 4]));
+    println!(
+        "k-split: {:?}",
+        Solution::max_sum_of_three_subarrays(vec![1, 2, 1, 2, 6, 7, 5, 1], 2)
+    )
 }
 
 struct Solution;
@@ -270,48 +274,263 @@ impl Solution {
         }
         res
     }
+
+    pub fn max_sum_of_three_subarrays(nums: Vec<i32>, k: i32) -> Vec<i32> {
+        let n = nums.len();
+        let k = k as usize;
+        let mut ksum = vec![0; n];
+        let (mut l, mut r) = (0, 0);
+        let mut sum = 0;
+        while r < n {
+            sum += nums[r];
+            if r - l + 1 == k {
+                ksum[l] = sum;
+                sum -= nums[l];
+                l += 1;
+            }
+            r += 1;
+        }
+
+        // 0..=i范围上长度为k且累加和最大的子数组的起始位置
+        let mut dp1 = vec![0; n];
+        let (mut l, mut r) = (1, k);
+        while r < n {
+            // 这里是小于，因为是往后找，所以尽量不动
+            if ksum[l] > ksum[dp1[r - 1]] {
+                dp1[r] = l
+            } else {
+                dp1[r] = dp1[r - 1]
+            }
+            l += 1;
+            r += 1
+        }
+
+        // 从i..n-1范围上长度为k且累加和最大的子数组的起始位置
+        let mut dp2 = vec![n - k; n];
+        for r in (0..n - k).rev() {
+            // 这里是大于等于，因为是往前找，所以能动就动
+            if ksum[r] >= ksum[dp2[r + 1]] {
+                dp2[r] = r
+            } else {
+                dp2[r] = dp2[r + 1]
+            }
+        }
+        let mut res = vec![0; 3];
+        let mut max = i32::MIN;
+        for m in k..=n - 2 * k {
+            let cur_max = ksum[m] + ksum[dp1[m - 1]] + ksum[dp2[m + k]];
+            // println!("{} {} {} {}", dp1[m - 1], m, dp2[m + k], cur_max);
+            if cur_max > max {
+                max = cur_max;
+                res[0] = dp1[m - 1] as i32;
+                res[1] = m as i32;
+                res[2] = dp2[m + k] as i32;
+            }
+        }
+
+        res
+    }
+}
+
+fn sub_seq_mod_by_7(nums: &[i32]) -> i32 {
+    let n = nums.len();
+    let mut dp = vec![vec![-1; 7]; n + 1];
+    dp[0][0] = 0;
+    for i in 1..=n {
+        for j in 0..7 {
+            dp[i][j] = dp[i - 1][j];
+            if dp[i - 1][(7 + j - (nums[i - 1] as usize % 7)) % 7] != -1 {
+                dp[i][j] =
+                    dp[i][j].max(dp[i - 1][(7 + j - (nums[i - 1] as usize % 7)) % 7] + nums[i - 1])
+            }
+        }
+    }
+    dp[n][0]
+}
+
+fn sub_seq_mod_by_7_force(nums: &[i32]) -> i32 {
+    let mut sum = 0;
+    let mut max = -1;
+    sub_seq_max(nums, 0, &mut sum, &mut max)
+}
+
+fn sub_seq_max(nums: &[i32], i: usize, sum: &mut i32, max: &mut i32) -> i32 {
+    if i == nums.len() {
+        if *sum % 7 == 0 && *sum > *max {
+            *max = *sum
+        }
+        *max
+    } else {
+        let max1 = sub_seq_max(nums, i + 1, sum, max);
+        *sum += nums[i];
+        let max2 = sub_seq_max(nums, i + 1, sum, max);
+        *sum -= nums[i];
+        max1.max(max2)
+    }
+}
+
+fn magic_roll(nums: &[i32]) -> i32 {
+    let n = nums.len();
+    let p1 = nums.iter().sum::<i32>();
+    let mut dp1 = vec![0; n];
+    let mut sum = nums[0];
+    let mut max_sum = sum.max(0);
+    for i in 1..n {
+        dp1[i] = (dp1[i - 1] + nums[i]).max(max_sum);
+        sum += nums[i];
+        max_sum = max_sum.max(sum);
+    }
+    let p2 = dp1[n - 1];
+    let mut dp2 = vec![0; n];
+    let mut sum = nums[n - 1];
+    max_sum = sum.max(0);
+    for i in (0..n - 1).rev() {
+        dp2[i] = (dp2[i + 1] + nums[i]).max(max_sum);
+        sum += nums[i];
+        max_sum = max_sum.max(sum);
+    }
+    let mut p3 = 0;
+    for i in 0..n - 1 {
+        p3 = p3.max(dp1[i] + dp2[i + 1]);
+    }
+    p1.max(p2).max(p3)
+}
+
+fn magic_roll_force(nums: &[i32]) -> i32 {
+    let mut res = i32::MIN;
+    for i in 0..nums.len() {
+        res = res.max(magic_roll_sub(nums, 0, i) + magic_roll_sub(nums, i + 1, nums.len() - 1))
+    }
+    res
+}
+
+fn magic_roll_sub(nums: &[i32], i: usize, j: usize) -> i32 {
+    let mut max = nums[i..=j].iter().sum::<i32>();
+    for ti in i..=j {
+        for tj in ti..=j {
+            let mut t_sum = 0;
+            for k in i..=j {
+                if k < ti || k > tj {
+                    t_sum += nums[k];
+                }
+            }
+            max = max.max(t_sum)
+        }
+    }
+
+    max
+}
+
+fn reverse_once(nums: &[i32]) -> i32 {
+    let n = nums.len();
+    // 以i为开头，最大的子数组累加和
+    let mut dp1 = vec![0; n];
+    dp1[n - 1] = nums[n - 1];
+    let mut ori_max = dp1[n - 1];
+    for i in (0..n - 1).rev() {
+        dp1[i] = nums[i].max(nums[i] + dp1[i + 1]);
+        ori_max = ori_max.max(dp1[i]);
+    }
+    // 以i为结尾，最大的子数组累加和
+    let mut dp2 = vec![0; n];
+    dp2[0] = nums[0];
+    for i in 1..n {
+        dp2[i] = nums[i].max(nums[i] + dp2[i - 1])
+    }
+    let mut pre_max = dp2[0];
+    for i in 1..n {
+        let cur_max = dp1[i] + pre_max;
+        if cur_max > ori_max {
+            ori_max = cur_max;
+        }
+        pre_max = pre_max.max(dp2[i]);
+    }
+    ori_max
+}
+
+fn reverse_once_force(nums: &[i32]) -> i32 {
+    let mut o_nums = vec![];
+    nums.clone_into(&mut o_nums);
+    let mut max = i32::MIN;
+    for i in 0..nums.len() {
+        for j in i..nums.len() {
+            o_nums[i..=j].reverse();
+            let mut pre = o_nums[0];
+            let mut t_max = pre;
+            for &num in o_nums.iter().skip(1) {
+                pre = num.max(num + pre);
+                t_max = t_max.max(pre)
+            }
+            o_nums[i..=j].reverse();
+            max = max.max(t_max)
+        }
+    }
+    max
+}
+
+fn max_sum_delete_one(nums: Vec<i32>, k: i32) -> i32 {
+    if nums.len() <= k as usize {
+        0
+    } else {
+        let (mut h, mut t) = (0, 0);
+        let mut q = Vec::with_capacity(k as usize);
+        let (mut l, mut r) = (0, 0);
+        let mut max = i32::MIN;
+        let mut sum = 0;
+        while r < nums.len() {
+            while t > h && nums[r] < nums[q[t - 1]] {
+                t -= 1;
+            }
+            q[t] = r;
+            sum += nums[r];
+            if r - l + 1 == (k + 1) as usize {
+                max = max.max(sum - nums[q[h]]);
+                if t >= h && nums[l] == nums[q[h]] {
+                    h += 1;
+                }
+                sum -= nums[l];
+                l += 1;
+            }
+
+            r += 1;
+        }
+
+        max
+    }
+}
+
+fn max_sum_delete_one_force(nums: Vec<i32>, k: i32) -> i32 {
+    if nums.len() <= k as usize {
+        return 0;
+    }
+    let mut max = i32::MIN;
+    for i in 0..nums.len() {
+        let mut cache = Vec::new();
+        cache.extend_from_slice(&nums[0..i]);
+        cache.extend_from_slice(&nums[i + 1..nums.len()]);
+        let (mut l, mut r) = (0, 0);
+        let mut sum = 0;
+        let mut t_max = sum;
+        while r < cache.len() {
+            sum += cache[r];
+            if r - l + 1 == k as usize {
+                if sum > t_max {
+                    t_max = sum;
+                }
+                sum -= cache[l];
+                l += 1;
+            }
+            r += 1;
+        }
+        max = max.max(t_max);
+        cache.clear();
+    }
+    max
 }
 
 #[cfg(test)]
 mod maxsum_test {
     use rand::{thread_rng, Rng};
-
-    fn sub_seq_mod_by_7(nums: &[i32]) -> i32 {
-        let n = nums.len();
-        let mut dp = vec![vec![-1; 7]; n + 1];
-        dp[0][0] = 0;
-        for i in 1..=n {
-            for j in 0..7 {
-                dp[i][j] = dp[i - 1][j];
-                if dp[i - 1][(7 + j - (nums[i - 1] as usize % 7)) % 7] != -1 {
-                    dp[i][j] = dp[i][j]
-                        .max(dp[i - 1][(7 + j - (nums[i - 1] as usize % 7)) % 7] + nums[i - 1])
-                }
-            }
-        }
-        dp[n][0]
-    }
-
-    fn sub_seq_mod_by_7_force(nums: &[i32]) -> i32 {
-        let mut sum = 0;
-        let mut max = -1;
-        sub_seq_max(nums, 0, &mut sum, &mut max)
-    }
-
-    fn sub_seq_max(nums: &[i32], i: usize, sum: &mut i32, max: &mut i32) -> i32 {
-        if i == nums.len() {
-            if *sum % 7 == 0 && *sum > *max {
-                *max = *sum
-            }
-            *max
-        } else {
-            let max1 = sub_seq_max(nums, i + 1, sum, max);
-            *sum += nums[i];
-            let max2 = sub_seq_max(nums, i + 1, sum, max);
-            *sum -= nums[i];
-            max1.max(max2)
-        }
-    }
 
     #[test]
     fn test_mod_7() {
@@ -323,62 +542,10 @@ mod maxsum_test {
             for _ in 0..arr_len {
                 arr.push(rng.gen_range(0..=100_000));
             }
-            let r1 = sub_seq_mod_by_7_force(&arr);
-            let r2 = sub_seq_mod_by_7(&arr);
+            let r1 = super::sub_seq_mod_by_7_force(&arr);
+            let r2 = super::sub_seq_mod_by_7(&arr);
             assert_eq!(r1, r2, "correct value: {} verify value: {}", r1, r2)
         }
-    }
-
-    fn magic_roll(nums: &[i32]) -> i32 {
-        let n = nums.len();
-        let p1 = nums.iter().sum::<i32>();
-        let mut dp1 = vec![0; n];
-        let mut sum = nums[0];
-        let mut max_sum = sum.max(0);
-        for i in 1..n {
-            dp1[i] = (dp1[i - 1] + nums[i]).max(max_sum);
-            sum += nums[i];
-            max_sum = max_sum.max(sum);
-        }
-        let p2 = dp1[n - 1];
-        let mut dp2 = vec![0; n];
-        let mut sum = nums[n - 1];
-        max_sum = sum.max(0);
-        for i in (0..n - 1).rev() {
-            dp2[i] = (dp2[i + 1] + nums[i]).max(max_sum);
-            sum += nums[i];
-            max_sum = max_sum.max(sum);
-        }
-        let mut p3 = 0;
-        for i in 0..n - 1 {
-            p3 = p3.max(dp1[i] + dp2[i + 1]);
-        }
-        p1.max(p2).max(p3)
-    }
-
-    fn magic_roll_force(nums: &[i32]) -> i32 {
-        let mut res = i32::MIN;
-        for i in 0..nums.len() {
-            res = res.max(magic_roll_sub(nums, 0, i) + magic_roll_sub(nums, i + 1, nums.len() - 1))
-        }
-        res
-    }
-
-    fn magic_roll_sub(nums: &[i32], i: usize, j: usize) -> i32 {
-        let mut max = nums[i..=j].iter().sum::<i32>();
-        for ti in i..=j {
-            for tj in ti..=j {
-                let mut t_sum = 0;
-                for k in i..=j {
-                    if k < ti || k > tj {
-                        t_sum += nums[k];
-                    }
-                }
-                max = max.max(t_sum)
-            }
-        }
-
-        max
     }
 
     #[test]
@@ -392,9 +559,53 @@ mod maxsum_test {
                 arr.push(rng.gen_range(-100_000..=100_000));
             }
             // println!("arr: {:?}", arr);
-            let r1 = magic_roll_force(&arr);
-            let r2 = magic_roll(&arr);
+            let r1 = super::magic_roll_force(&arr);
+            let r2 = super::magic_roll(&arr);
             assert_eq!(r1, r2, "correct value: {} verify value: {}", r1, r2)
+        }
+    }
+
+    #[test]
+    fn test_reverse_once() {
+        let times = 20_000;
+        let mut rng = thread_rng();
+        for _ in 0..times {
+            let arr_len = rng.gen_range(1..=30);
+            let mut arr = Vec::with_capacity(arr_len);
+            for _ in 0..arr_len {
+                arr.push(rng.gen_range(-100_000..=100_000));
+            }
+            // arr = vec![-62, 9];
+            let r1 = super::reverse_once_force(&arr);
+            let r2 = super::reverse_once(&arr);
+            assert_eq!(
+                r1, r2,
+                "correct value: {} verify value: {}\narr {:?}",
+                r1, r2, arr
+            )
+        }
+    }
+
+    #[test]
+    fn test_max_sum_delete_one() {
+        let times = 2_000;
+        let mut rng = thread_rng();
+        for _ in 0..times {
+            let arr_len = rng.gen_range(1..=50);
+            let mut arr = Vec::with_capacity(arr_len);
+            for _ in 0..arr_len {
+                arr.push(rng.gen_range(-100_000..=100_000));
+            }
+            // println!("arr is {:?}", arr);
+            let k = rng.gen_range(1..=20) as i32;
+            // arr = vec![-62, 9];
+            let r1 = super::max_sum_delete_one_force(arr.clone(), k);
+            let r2 = super::max_sum_delete_one_force(arr.clone(), k);
+            assert_eq!(
+                r1, r2,
+                "correct value: {} verify value: {}\narr {:?}",
+                r1, r2, arr
+            )
         }
     }
 }
