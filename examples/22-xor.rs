@@ -17,7 +17,7 @@ fn main() {
 }
 
 fn exchange_2_nums(a: &mut i32, b: &mut i32) {
-    std::mem::swap(&mut (*a), &mut (*b));
+    std::mem::swap(a, b);
     // *a ^= *b;
     // *b ^= *a;
     // *a ^= *b;
@@ -47,15 +47,15 @@ fn max_val_2(a: i32, b: i32) -> i32 {
     let c = a.wrapping_sub(b);
     let c_sign = sign(c);
 
-    let a_sigh = sign(a);
+    let a_sign = sign(a);
     let b_sign = sign(b);
     // a b符号相同，c不会溢出
     // a b符号不同，只要看a是不是正数
     // 如果不一样返回1，如果一样返回0
-    let diff_s = a_sigh ^ b_sign;
+    let diff_s = a_sign ^ b_sign;
     let same_s = flip(diff_s);
-    let ret_a = diff_s * flip(a_sigh) + same_s * flip(c_sign);
-    // let ret_a = ((a_sigh ^ b_sign) & flip(a_sigh)) | (flip(a_sigh ^ b_sign) & flip(c_sign));
+    let ret_a = diff_s * flip(a_sign) + same_s * flip(c_sign);
+    // let ret_a = ((a_sign ^ b_sign) & flip(a_sign)) | (flip(a_sign ^ b_sign) & flip(c_sign));
     ret_a * a + flip(ret_a) * b
 }
 
