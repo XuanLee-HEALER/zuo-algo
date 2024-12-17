@@ -48,8 +48,9 @@ impl Solution {
 
     /// 哈希表记录当前节点的层数
     /// 弹出节点时需判断当前节点层数，如果此层数有子链表，则插入进去，否则创建新链表
+    /// lc题目中定义的节点类型没有实现Hash trait，所以题目中不用这种方式
     fn level_order1(root: Option<Rc<RefCell<TreeNode>>>) -> Vec<Vec<i32>> {
-        Vec::new()
+        vec![]
     }
 
     fn level_order2(root: Option<Rc<RefCell<TreeNode>>>) -> Vec<Vec<i32>> {

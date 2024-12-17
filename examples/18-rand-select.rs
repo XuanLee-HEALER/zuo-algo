@@ -59,7 +59,7 @@ impl Solution {
     }
 
     fn pivot(nums: &[i32], c: usize) -> i32 {
-        let mut midst = Vec::with_capacity((nums.len() + c - 1) / c);
+        let mut midst = Vec::with_capacity(nums.len().div_ceil(c));
         let n = nums.len();
         let mut i = 0;
         while i < n {

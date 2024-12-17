@@ -77,7 +77,7 @@ impl Solution {
     pub fn k_increasing(arr: Vec<i32>, k: i32) -> i32 {
         let n = arr.len();
         let k = k as usize;
-        let mut grp = vec![0; (n + k - 1) / k];
+        let mut grp = vec![0; n.div_ceil(k)];
         let mut res = 0;
         for i in 0..k {
             let mut c = 0;
