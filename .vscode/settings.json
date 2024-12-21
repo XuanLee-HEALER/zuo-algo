@@ -54,5 +54,6 @@
     "print": "cpp",
     "queue": "cpp",
     "stack": "cpp"
-  }
+  },
+  "github.copilot.editor.enableAutoCompletions": false
 }
