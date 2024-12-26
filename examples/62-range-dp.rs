@@ -5,6 +5,12 @@ fn main() {
     println!("res {}", Solution::min_cost_1(7, vec![1, 3, 4, 5]));
     println!("res {}", Solution::max_coins(vec![3, 1, 5, 8]));
     println!("res {}", Solution::count_eval("1^0|0|1".into(), 0));
+    println!("res {}", Solution::remove_boxes(vec![1, 1, 1]));
+    println!("res {}", Solution::merge_stones(vec![3, 5, 1, 2, 6], 3));
+    println!(
+        "res {}",
+        Solution::count_palindromic_subsequences("bddaabdbbccdcdcbbdbddccbaaccabbcacbadbdadbccddccdbdbdbdabdbddcccadddaaddbcbcbabdcaccaacabdbdaccbaacc".into())
+    );
 }
 
 struct Solution;
@@ -292,5 +298,149 @@ impl Solution {
         } else {
             dp[0][n - 1].1
         }
+    }
+
+    pub fn remove_boxes(boxes: Vec<i32>) -> i32 {
+        let n = boxes.len();
+        let mut dp = vec![vec![vec![0; n]; n]; n];
+        Self::rb(&boxes, 0, n - 1, 0, &mut dp)
+    }
+
+    fn rb(arr: &[i32], l: usize, r: usize, k: usize, dp: &mut [Vec<Vec<i32>>]) -> i32 {
+        if l > r {
+            0
+        } else if dp[l][r][k] > 0 {
+            dp[l][r][k]
+        } else {
+            let mut s = l;
+            while s < r && arr[s + 1] == arr[s] {
+                s += 1
+            }
+            let cn = s - l + 1 + k;
+            let mut p1 = (cn as i32 * cn as i32) + Self::rb(arr, s + 1, r, 0, dp);
+            let mut p = s + 1;
+            while p <= r {
+                if arr[p] == arr[l] && arr[p] != arr[p - 1] {
+                    p1 = p1.max(Self::rb(arr, s + 1, p - 1, 0, dp) + Self::rb(arr, p, r, cn, dp))
+                }
+                p += 1;
+            }
+            dp[l][r][k] = p1;
+            dp[l][r][k]
+        }
+    }
+
+    pub fn merge_stones(stones: Vec<i32>, k: i32) -> i32 {
+        let n = stones.len();
+        if (n as i32 - 1) % (k - 1) != 0 {
+            -1
+        } else {
+            let mut presum = vec![0; n + 1];
+            let mut sum = 0;
+            for (i, &stone) in stones.iter().enumerate() {
+                presum[i + 1] = sum + stone;
+                sum += stone;
+            }
+
+            let mut dp = vec![vec![0; n]; n];
+            for i in (0..n - 1).rev() {
+                for j in i + 1..n {
+                    let mut tk = i;
+                    let mut res = i32::MAX;
+                    while tk < j {
+                        res = res.min(dp[i][tk] + dp[tk + 1][j]);
+                        tk += k as usize - 1
+                    }
+                    if (j as i32 - i as i32) % (k - 1) == 0 {
+                        res = res + presum[j + 1] - presum[i]
+                    }
+                    dp[i][j] = res
+                }
+            }
+            dp[0][n - 1]
+        }
+    }
+
+    pub fn count_palindromic_subsequences(s: String) -> i32 {
+        const MOD: i64 = 1_000_000_007;
+        let s = s.as_bytes();
+        let n = s.len();
+        let mut dp = vec![vec![0_i64; n]; n];
+        for (i, sub) in dp.iter_mut().enumerate() {
+            sub[i] = 1
+        }
+        // 左边距离 i 位置字符最近的相同字符位置，初始为-1
+        let mut left = vec![-1; n];
+        // 右边距离 i 位置字符最近的相同字符位置，初始为n
+        let mut right = vec![n as i32; n];
+        let mut ai = -1;
+        let mut bi = -1;
+        let mut ci = -1;
+        let mut di = -1;
+
+        for (i, &b) in s.iter().enumerate() {
+            match b {
+                b'a' => {
+                    left[i] = ai;
+                    ai = i as i32
+                }
+                b'b' => {
+                    left[i] = bi;
+                    bi = i as i32
+                }
+                b'c' => {
+                    left[i] = ci;
+                    ci = i as i32
+                }
+                b'd' => {
+                    left[i] = di;
+                    di = i as i32
+                }
+                _ => (),
+            }
+        }
+        ai = n as i32;
+        bi = n as i32;
+        ci = n as i32;
+        di = n as i32;
+        for (i, &b) in s.iter().rev().enumerate() {
+            match b {
+                b'a' => {
+                    right[n - i - 1] = ai;
+                    ai = (n - i - 1) as i32
+                }
+                b'b' => {
+                    right[n - i - 1] = bi;
+                    bi = (n - i - 1) as i32
+                }
+                b'c' => {
+                    right[n - i - 1] = ci;
+                    ci = (n - i - 1) as i32
+                }
+                b'd' => {
+                    right[n - i - 1] = di;
+                    di = (n - i - 1) as i32
+                }
+                _ => (),
+            }
+        }
+        for i in (0..n - 1).rev() {
+            for j in i + 1..n {
+                if s[i] != s[j] {
+                    dp[i][j] = (dp[i][j - 1] + dp[i + 1][j] - dp[i + 1][j - 1] + MOD) % MOD
+                } else {
+                    match left[j].cmp(&right[i]) {
+                        std::cmp::Ordering::Less => dp[i][j] = (2 * dp[i + 1][j - 1] + 2) % MOD,
+                        std::cmp::Ordering::Equal => dp[i][j] = (2 * dp[i + 1][j - 1] + 1) % MOD,
+                        std::cmp::Ordering::Greater => {
+                            let (ti, tj) = (right[i] as usize, left[j] as usize);
+                            dp[i][j] = (2 * dp[i + 1][j - 1] - dp[ti + 1][tj - 1] + MOD) % MOD
+                        }
+                    }
+                }
+            }
+        }
+
+        (dp[0][n - 1] % MOD) as i32
     }
 }
