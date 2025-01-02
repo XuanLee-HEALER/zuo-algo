@@ -38,8 +38,54 @@ fn main() {
             }))),
         }))),
     })));
+
     println!("res {}", Solution::max_bst(root.clone()));
     println!("res {}", Solution::max_sum_bst(root));
+    println!(
+        "res {}",
+        Solution::minimum_fuel_cost(vec![vec![0, 1], vec![0, 2], vec![0, 3]], 5)
+    );
+    println!(
+        "res {}",
+        Solution::longest_path(vec![-1, 0, 0, 1, 1, 2], "abacbe".into())
+    );
+    let root = Some(Rc::new(RefCell::new(TreeNode {
+        val: 1,
+        left: Some(Rc::new(RefCell::new(TreeNode {
+            val: 3,
+            left: Some(Rc::new(RefCell::new(TreeNode {
+                val: 2,
+                left: None,
+                right: None,
+            }))),
+            right: None,
+        }))),
+        right: Some(Rc::new(RefCell::new(TreeNode {
+            val: 4,
+            left: Some(Rc::new(RefCell::new(TreeNode {
+                val: 6,
+                left: None,
+                right: None,
+            }))),
+            right: Some(Rc::new(RefCell::new(TreeNode {
+                val: 5,
+                left: None,
+                right: Some(Rc::new(RefCell::new(TreeNode {
+                    val: 7,
+                    left: None,
+                    right: None,
+                }))),
+            }))),
+        }))),
+    })));
+    println!("res {:?}", Solution::tree_queries(root, vec![4]));
+    println!(
+        "res {}",
+        Solution::minimum_score(
+            vec![5, 5, 2, 4, 4, 2],
+            vec![vec![0, 1], vec![1, 2], vec![5, 2], vec![4, 3], vec![1, 3]]
+        )
+    );
 }
 
 struct Solution;
@@ -87,6 +133,11 @@ struct DcInfo {
     size: i32,
     coin: i32,
     min_times: i32,
+}
+
+struct LpInfo {
+    max_path: i32,
+    max_root_path: i32,
 }
 
 impl Solution {
@@ -265,6 +316,220 @@ impl Solution {
                 res
             }
             None => 0,
+        }
+    }
+
+    pub fn minimum_fuel_cost(roads: Vec<Vec<i32>>, seats: i32) -> i64 {
+        let n = roads.len();
+        let mut graph = vec![vec![]; n + 1];
+        for road in &roads {
+            let a = road[0];
+            let b = road[1];
+            graph[a as usize].push(b);
+            graph[b as usize].push(a);
+        }
+        let mut size = vec![0; n + 1];
+        let mut cost = vec![0_i64; n + 1];
+        Self::mfc(&graph, seats, 0, -1, &mut size, &mut cost);
+        cost[0]
+    }
+
+    fn mfc(
+        graph: &[Vec<i32>],
+        seats: i32,
+        node: i32,
+        par: i32,
+        size: &mut [i32],
+        cost: &mut [i64],
+    ) {
+        let node = node as usize;
+        size[node] = 1;
+        if graph[node].len() == 1 && graph[node][0] == par as i32 {
+            cost[node] = 0;
+        } else {
+            for &sub in &graph[node] {
+                if sub != par {
+                    Self::mfc(graph, seats, sub, node as i32, size, cost);
+                    let sub = sub as usize;
+                    size[node] += size[sub];
+                    cost[node] += cost[sub] + ((size[sub] + seats - 1) / seats) as i64;
+                }
+            }
+        }
+    }
+
+    pub fn longest_path(parent: Vec<i32>, s: String) -> i32 {
+        let n = parent.len();
+        let mut graph = vec![vec![]; n];
+        for (i, &par) in parent.iter().enumerate().skip(1) {
+            graph[par as usize].push(i);
+        }
+        let s = s.as_bytes();
+        let lp_info = Self::lp(&graph, s, 0);
+        lp_info.max_path
+    }
+
+    fn lp(graph: &[Vec<usize>], s: &[u8], node: usize) -> LpInfo {
+        if graph[node].len() == 0 {
+            LpInfo {
+                max_path: 1,
+                max_root_path: 1,
+            }
+        } else {
+            let mut res1 = 0;
+            let mut first = 0;
+            let mut second = 0;
+            for &sub in &graph[node] {
+                let sub_lp = Self::lp(graph, s, sub);
+                res1 = res1.max(sub_lp.max_path);
+                if s[node] != s[sub] {
+                    if sub_lp.max_root_path > first {
+                        second = first;
+                        first = sub_lp.max_root_path
+                    } else if sub_lp.max_root_path > second {
+                        second = sub_lp.max_root_path
+                    }
+                }
+            }
+            let cur_max_root_path = first + 1;
+            let cur_max_path = res1.max(first + second + 1);
+            LpInfo {
+                max_path: cur_max_path,
+                max_root_path: cur_max_root_path,
+            }
+        }
+    }
+
+    pub fn tree_queries(root: Option<Rc<RefCell<TreeNode>>>, queries: Vec<i32>) -> Vec<i32> {
+        const NODE_SZ: usize = 100_002;
+        let mut dfn_cnt = 1_usize;
+        let mut dfn = vec![0; NODE_SZ];
+        let mut size = vec![0; NODE_SZ];
+        let mut height = vec![0; NODE_SZ];
+        let mut max_l = vec![0; NODE_SZ + 1];
+        let mut max_r = vec![0; NODE_SZ + 1];
+        Self::tq(root, 0, &mut dfn_cnt, &mut dfn, &mut size, &mut height);
+        let n = size[1] as usize;
+        let mut max_h = height[1];
+        for (i, &h) in height.iter().enumerate().skip(1).take(n) {
+            if h > max_h {
+                max_h = h;
+            }
+            max_l[i] = max_h;
+        }
+        max_h = height[n as usize];
+        for (i, &h) in height.iter().enumerate().skip(1).take(n).rev() {
+            if h > max_h {
+                max_h = h;
+            }
+            max_r[i] = max_h;
+        }
+
+        queries
+            .into_iter()
+            .map(|q| {
+                let dfn_id = dfn[q as usize];
+                let l = dfn_id;
+                let r = (l as i32 + size[dfn_id] - 1) as usize;
+                max_l[l - 1].max(max_r[r + 1])
+            })
+            .collect()
+    }
+
+    fn tq(
+        root: Option<Rc<RefCell<TreeNode>>>,
+        h: i32,
+        dfn_cnt: &mut usize,
+        dfn: &mut [usize],
+        size: &mut [i32],
+        height: &mut [i32],
+    ) {
+        if let Some(node) = root {
+            let cur = node.borrow();
+            let cur_dfn_cnt = *dfn_cnt;
+            dfn[cur.val as usize] = *dfn_cnt;
+            size[*dfn_cnt] = 1;
+            height[*dfn_cnt] = h;
+            *dfn_cnt += 1;
+            Self::tq(cur.left.clone(), h + 1, dfn_cnt, dfn, size, height);
+            Self::tq(cur.right.clone(), h + 1, dfn_cnt, dfn, size, height);
+            if let Some(ref left) = cur.left {
+                size[cur_dfn_cnt] += size[dfn[left.borrow().val as usize]]
+            }
+            if let Some(ref right) = cur.right {
+                size[cur_dfn_cnt] += size[dfn[right.borrow().val as usize]]
+            }
+        }
+    }
+
+    pub fn minimum_score(nums: Vec<i32>, edges: Vec<Vec<i32>>) -> i32 {
+        let n = nums.len();
+        let mut graph = vec![vec![]; n];
+        for edge in &edges {
+            let n1 = edge[0] as usize;
+            let n2 = edge[1] as usize;
+            graph[n1].push(n2);
+            graph[n2].push(n1);
+        }
+        let mut dfn = vec![0; n + 1];
+        let mut dfn_cnt = 1;
+        let mut size = vec![0; n + 1];
+        let mut xor = vec![0; n + 1];
+        Self::ms_dfn(
+            &graph,
+            &nums,
+            &mut dfn,
+            &mut dfn_cnt,
+            &mut size,
+            &mut xor,
+            0,
+        );
+        let m = edges.len();
+        let mut res = i32::MAX;
+        for i in 0..m - 1 {
+            let max_a = dfn[edges[i][0] as usize].max(dfn[edges[i][1] as usize]);
+            for j in i + 1..m {
+                let max_b = dfn[edges[j][0] as usize].max(dfn[edges[j][1] as usize]);
+                let (pre, pos) = if max_a > max_b {
+                    (max_b, max_a)
+                } else {
+                    (max_a, max_b)
+                };
+                let sum1 = xor[pos];
+                let sum2 = if pos < pre + size[pre] {
+                    // b子树是a子树的子树
+                    xor[pre] ^ xor[pos]
+                } else {
+                    xor[pre]
+                };
+                let sum3 = xor[1] ^ sum1 ^ sum2;
+                res = res.min(sum1.max(sum2).max(sum3) - sum1.min(sum2).min(sum3));
+            }
+        }
+
+        res
+    }
+
+    fn ms_dfn(
+        graph: &[Vec<usize>],
+        nums: &[i32],
+        dfn: &mut [usize],
+        dfn_cnt: &mut usize,
+        size: &mut [usize],
+        xor: &mut [i32],
+        node: usize,
+    ) {
+        let cur_dfn_cnt = *dfn_cnt;
+        *dfn_cnt += 1;
+        dfn[node] = cur_dfn_cnt;
+        size[cur_dfn_cnt] = 1;
+        xor[cur_dfn_cnt] = nums[node];
+        for &sub in &graph[node] {
+            if dfn[sub] == 0 {
+                Self::ms_dfn(graph, nums, dfn, dfn_cnt, size, xor, sub);
+                size[cur_dfn_cnt] += size[dfn[sub]];
+                xor[cur_dfn_cnt] ^= xor[dfn[sub]];
+            }
         }
     }
 }
