@@ -1,4 +1,4 @@
-use std::mem;
+use std::{mem, usize};
 
 fn main() {
     println!(
@@ -6,7 +6,19 @@ fn main() {
         Solution::max_profit_iv_2(2, vec![1, 2, 4, 2, 5, 7, 2, 4, 9, 0])
     );
     println!("res {}", Solution::max_profit_vi(vec![2, 1, 4]));
-    println!("res {}", Solution::num_perms_di_sequence_2("DID".into()))
+    println!("res {}", Solution::num_perms_di_sequence_2("DID".into()));
+    println!(
+        "res {}",
+        Solution::job_scheduling(vec![1, 1, 1], vec![2, 3, 4], vec![5, 6, 4])
+    );
+    assert_eq!(
+        Solution::k_inverse_pairs(500, 50),
+        Solution::k_inverse_pairs_1(500, 50)
+    );
+    println!(
+        "res {}",
+        Solution::find_rotate_steps("godding".into(), "gd".into())
+    )
 }
 
 struct Solution;
@@ -271,5 +283,200 @@ impl Solution {
         dp[0][n + 1]
     }
 
+    pub fn job_scheduling(start_time: Vec<i32>, end_time: Vec<i32>, profit: Vec<i32>) -> i32 {
+        let n = profit.len();
+        let mut sched = Vec::with_capacity(n);
+        for i in 0..n {
+            sched.push((start_time[i], end_time[i], profit[i]));
+        }
+        sched.sort_unstable_by_key(|s| s.1);
+        let mut dp = vec![0; n];
+        dp[0] = sched[0].2;
+        for i in 1..n {
+            let mut res = dp[i - 1];
+            if sched[0].1 <= sched[i].0 {
+                res = res.max(dp[Self::find(&sched[0..i], sched[i].0)] + sched[i].2)
+            } else {
+                res = res.max(sched[i].2)
+            }
+            dp[i] = res
+        }
+        dp[n - 1]
+    }
+
+    // 小于等于v的最右位置
+    fn find(arr: &[(i32, i32, i32)], v: i32) -> usize {
+        let n = arr.len();
+        let mut l = 0;
+        let mut r = n - 1;
+        let mut res = 0;
+        while l <= r {
+            let mid = l + ((r - l) >> 1);
+            if arr[mid].1 > v {
+                if mid > 1 {
+                    r = mid - 1
+                } else {
+                    break;
+                }
+            } else {
+                res = mid;
+                l = mid + 1;
+            }
+        }
+        res
+    }
+
+    pub fn k_inverse_pairs(n: i32, k: i32) -> i32 {
+        let n = n as usize;
+        let k = k as usize;
+        let mut dp = vec![vec![0; k + 1]; n + 1];
+        dp[1][0] = 1;
+        for i in 2..=n {
+            dp[i][0] = 1;
+            for j in 1..=k {
+                let mut res = 0;
+                if i > j {
+                    for k in 0..=j {
+                        res = (res + dp[i - 1][k]) % Self::MOD;
+                    }
+                } else {
+                    for k in (j - i + 1)..=j {
+                        res = (res + dp[i - 1][k]) % Self::MOD;
+                    }
+                }
+                dp[i][j] = res
+            }
+        }
+        dp[n][k]
+    }
+
+    pub fn k_inverse_pairs_1(n: i32, k: i32) -> i32 {
+        let n = n as usize;
+        let k = k as usize;
+        let mut old = vec![0; k + 1];
+        let mut dp = vec![0; k + 1];
+        let mut old = &mut old;
+        let mut dp = &mut dp;
+        old[0] = 1;
+        dp[0] = 1;
+        for i in 1..=n {
+            let mut window = old[0];
+            for j in 1..=k {
+                dp[j] = if i > j {
+                    window = (old[j] + window) % Self::MOD;
+                    window
+                } else {
+                    window = ((old[j] + window) % Self::MOD - old[j - i] + Self::MOD) % Self::MOD;
+                    window
+                }
+            }
+            let tmp = old;
+            old = dp;
+            dp = tmp;
+        }
+        old[k]
+    }
+
     const MOD: i32 = 1_000_000_007;
+
+    pub fn find_rotate_steps(ring: String, key: String) -> i32 {
+        let ring = ring.as_bytes();
+        let key = key.as_bytes();
+        let mut arr1 = Vec::with_capacity(ring.len());
+        let mut arr2 = Vec::with_capacity(key.len());
+        let mut statis = vec![vec![]; 26];
+        for (i, &b) in ring.iter().enumerate() {
+            let cur = (b - b'a') as usize;
+            arr1.push(cur);
+            statis[cur].push(i);
+        }
+        for &b in key {
+            arr2.push((b - b'a') as usize);
+        }
+        let n = arr1.len();
+        let m = arr2.len();
+        let mut dp = vec![vec![-1; m]; n];
+        Self::frs(&arr1, &arr2, arr1.len(), arr2.len(), &statis, 0, 0, &mut dp)
+    }
+
+    fn frs(
+        arr1: &[usize],
+        arr2: &[usize],
+        n: usize,
+        m: usize,
+        statis: &[Vec<usize>],
+        i: usize,
+        j: usize,
+        dp: &mut [Vec<i32>],
+    ) -> i32 {
+        if j == m {
+            0
+        } else if dp[i][j] != -1 {
+            dp[i][j]
+        } else if arr1[i] == arr2[j] {
+            1 + Self::frs(arr1, arr2, n, m, statis, i, j + 1, dp)
+        } else if statis[arr2[j]].len() > 0 {
+            let mut res = i32::MAX;
+            // 从i开始顺时针第一个j字符，就是statis[arr2[j]]大于i的最左
+            res = if let Some(c) = Self::clock(&statis[arr2[j]], i) {
+                res.min((c - i) as i32 + Self::frs(arr1, arr2, n, m, statis, c, j, dp))
+            } else {
+                let &c = statis[arr2[j]].first().unwrap();
+                res.min((n - i + c) as i32 + Self::frs(arr1, arr2, n, m, statis, c, j, dp))
+            };
+            // 从i开始逆时针第一个j字符，就是statis[arr2[j]]小于i的最右
+            res = if let Some(c) = Self::counter_clock(&statis[arr2[j]], i) {
+                res.min((i - c) as i32 + Self::frs(arr1, arr2, n, m, statis, c, j, dp))
+            } else {
+                let &c = statis[arr2[j]].last().unwrap();
+                res.min((n - c + i) as i32 + Self::frs(arr1, arr2, n, m, statis, c, j, dp))
+            };
+            dp[i][j] = res;
+            dp[i][j]
+        } else {
+            0
+        }
+    }
+
+    // 大于v的最左
+    fn clock(arr: &[usize], v: usize) -> Option<usize> {
+        let n = arr.len();
+        let mut l = 0;
+        let mut r = n - 1;
+        let mut res = None;
+        while l <= r {
+            let mid = l + ((r - l) >> 1);
+            if arr[mid] > v {
+                res = Some(arr[mid]);
+                if mid > 0 {
+                    r = mid - 1;
+                } else {
+                    break;
+                }
+            } else {
+                l = mid + 1;
+            }
+        }
+        res
+    }
+
+    // 小于v的最右
+    fn counter_clock(arr: &[usize], v: usize) -> Option<usize> {
+        let n = arr.len();
+        let mut l = 0;
+        let mut r = n - 1;
+        let mut res = None;
+        while l <= r {
+            let mid = l + ((r - l) >> 1);
+            if arr[mid] < v {
+                res = Some(arr[mid]);
+                l = mid + 1;
+            } else if mid > 0 {
+                r = mid - 1;
+            } else {
+                break;
+            }
+        }
+        res
+    }
 }
