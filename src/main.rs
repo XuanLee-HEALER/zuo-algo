@@ -1,6 +1,7 @@
 mod lc135;
 mod lc1957;
 mod lc2914;
+mod lc30;
 mod lc34;
 mod lc344;
 mod lc37;
