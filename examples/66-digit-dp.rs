@@ -11,6 +11,11 @@ fn main() {
     println!("{}", Solution::count("1".into(), "12".into(), 1, 8));
     println!("{}", Solution::count_special_numbers(135));
     // println!("{}", Solution::count_special_numbers(43));
+    let sample = [(5, 5), (1, 2), (2, 3), (100, 34), (500, 89)];
+    for &(a, b) in &sample {
+        assert_eq!(Solution::find_integers_1(a), b)
+    }
+    println!("{}", Solution::count_digit_one(110));
 }
 
 struct Solution;
@@ -243,5 +248,89 @@ impl Solution {
 
     pub fn num_dup_digits_at_most_n(n: i32) -> i32 {
         n - Self::count_special_numbers(n)
+    }
+
+    pub fn find_integers(n: i32) -> i32 {
+        let mut dp1 = vec![0; 31];
+        dp1[0] = 1;
+        dp1[1] = 2;
+        for i in 2..31 {
+            dp1[i] = dp1[i - 1] + dp1[i - 2]
+        }
+
+        Self::fi(n, &dp1, 30)
+    }
+
+    fn fi(n: i32, dp: &[i32], digit: i32) -> i32 {
+        if digit == -1 {
+            1
+        } else {
+            let mut res = 0;
+            if (1 << digit) & n != 0 {
+                res += dp[digit as usize];
+                if (1 << (digit + 1) & n) != 0 {
+                    return res;
+                }
+            }
+            res += Self::fi(n, dp, digit - 1);
+            res
+        }
+    }
+
+    pub fn find_integers_1(n: i32) -> i32 {
+        let mut dp1 = vec![0; 31];
+        dp1[0] = 1;
+        dp1[1] = 2;
+        for i in 2..31 {
+            dp1[i] = dp1[i - 1] + dp1[i - 2]
+        }
+
+        let mut res = 0;
+        for i in (0..31).rev() {
+            if (1 << i) <= n {
+                if (1 << i) & n != 0 {
+                    res += dp1[i as usize];
+                    if (1 << (i + 1)) & n != 0 {
+                        break;
+                    }
+                }
+                if i - 1 == -1 {
+                    res += 1;
+                }
+            }
+        }
+        res
+    }
+
+    pub fn count_digit_one(n: i32) -> i32 {
+        Self::digit_occurrence(n, 1) as i32
+    }
+
+    // 1~num中digit出现了多少次
+    fn digit_occurrence(num: i32, digit: i32) -> i64 {
+        let mut res = 0;
+        let mut cur = num;
+        let mut pre;
+        let mut suf = 1;
+        let mut suf_num = 0;
+        while cur > 0 {
+            pre = cur / 10;
+            let cur_d = cur % 10;
+            if digit == 0 {
+                pre -= 1
+            }
+
+            if digit < cur_d {
+                res += ((pre + 1) * suf) as i64
+            } else if digit > cur_d {
+                res += (pre * suf) as i64
+            } else {
+                res += (pre * suf + suf_num + 1) as i64
+            }
+            suf_num += cur_d * suf;
+            suf = suf * 10;
+            cur /= 10;
+        }
+        res
     }
 }
