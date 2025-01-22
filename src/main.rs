@@ -6,6 +6,7 @@ mod lc34;
 mod lc344;
 mod lc37;
 mod lc40;
+mod lc51;
 mod lc80;
 
 fn main() {
