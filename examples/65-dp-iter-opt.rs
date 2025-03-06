@@ -1,4 +1,4 @@
-use std::{mem, usize};
+use std::usize;
 
 fn main() {
     println!(

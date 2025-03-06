@@ -105,7 +105,7 @@ fn solve1(n: i32, k: i32) -> Vec<i32> {
     let mut dp = vec![vec![vec![-1; all_sum as usize / 2 + 2]; k as usize + 1]; n as usize + 1];
     let mut t_arr = vec![];
     let mut tt_arr = vec![];
-    let mut res1 = sub(n, 1, k, all_sum / 2, &mut dp, &mut t_arr, &mut tt_arr);
+    let res1 = sub(n, 1, k, all_sum / 2, &mut dp, &mut t_arr, &mut tt_arr);
     for arr in &tt_arr {
         println!("tmp_res: {:?}", arr)
     }

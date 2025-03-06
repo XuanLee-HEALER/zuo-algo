@@ -190,7 +190,7 @@ impl Solution {
         let mut max = 0;
         let mut max_cnt = 0;
         let mut ct = HashMap::new();
-        let mut g = 0;
+        let g = 0;
         for &i in &arr {
             if i != 0 {
                 if i > max {
