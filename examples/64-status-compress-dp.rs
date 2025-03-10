@@ -244,7 +244,7 @@ impl Solution {
             mp.entry(m_in).and_modify(|v| *v += m).or_insert(m);
         }
         let mut debt = vec![];
-        mp.iter().filter(|(_, &v)| v != 0).for_each(|(_, &v)| {
+        mp.iter().filter(|&(_, v)| *v != 0).for_each(|(_, &v)| {
             debt.push(v);
         });
         let n = debt.len();

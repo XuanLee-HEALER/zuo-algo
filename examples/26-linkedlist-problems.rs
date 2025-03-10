@@ -61,7 +61,7 @@ impl Solution {
 
     fn peek_head(mut head: &Option<Box<ListNode>>, k: i32) -> bool {
         let mut counter = 0;
-        while let Some(ref node) = head {
+        while let Some(node) = head {
             counter += 1;
             head = &node.next;
             if counter >= k {
