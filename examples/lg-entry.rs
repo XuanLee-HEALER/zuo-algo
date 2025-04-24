@@ -2,7 +2,238 @@
 use std::io::{self, BufRead, BufReader, BufWriter, Write};
 
 fn main() {
-    b2025::in_out();
+    b2039::in_out();
+}
+
+mod b2043 {
+    use super::*;
+    pub fn in_out() {
+        let mut br = BufReader::new(io::stdin().lock());
+        let mut bw = BufWriter::new(io::stdout().lock());
+        let mut buf = String::new();
+        br.read_line(&mut buf).unwrap();
+        let x1: i32 = buf.trim().parse().unwrap();
+        let r = c(x1);
+        bw.write_fmt(format_args!(
+            "{}\n",
+            if r.is_empty() { "n".into() } else { c(x1) }
+        ))
+        .unwrap();
+        bw.flush().unwrap()
+    }
+
+    fn c(n: i32) -> String {
+        let r = String::new();
+        let r = r
+            + if n % 3 == 0 { "3 " } else { "" }
+            + if n % 5 == 0 { "5 " } else { "" }
+            + if n % 7 == 0 { "7 " } else { "" };
+        r.trim().into()
+    }
+}
+
+mod b2042 {
+    use super::*;
+    pub fn in_out() {
+        let mut br = BufReader::new(io::stdin().lock());
+        let mut bw = BufWriter::new(io::stdout().lock());
+        let mut buf = String::new();
+        br.read_line(&mut buf).unwrap();
+        let x1: i32 = buf.trim().parse().unwrap();
+        bw.write_fmt(format_args!(
+            "{}\n",
+            if x1 % 3 == 0 && x1 % 5 == 0 {
+                "YES"
+            } else {
+                "NO"
+            }
+        ))
+        .unwrap();
+        bw.flush().unwrap()
+    }
+}
+
+mod b2041 {
+    use super::*;
+    pub fn in_out() {
+        let mut br = BufReader::new(io::stdin().lock());
+        let mut bw = BufWriter::new(io::stdout().lock());
+        let mut buf = String::new();
+        br.read_line(&mut buf).unwrap();
+        let mut segs = buf.trim().split_whitespace();
+        let x1: i32 = segs.next().unwrap().parse().unwrap();
+        let x2: i32 = segs.next().unwrap().parse().unwrap();
+        bw.write_fmt(format_args!(
+            "{}\n",
+            if x1 >= 10 || x2 >= 20 { 1 } else { 0 }
+        ))
+        .unwrap();
+        bw.flush().unwrap()
+    }
+}
+
+mod b2040 {
+    use super::*;
+    pub fn in_out() {
+        let mut br = BufReader::new(io::stdin().lock());
+        let mut bw = BufWriter::new(io::stdout().lock());
+        let mut buf = String::new();
+        br.read_line(&mut buf).unwrap();
+        let x1: i32 = buf.trim().parse().unwrap();
+        bw.write_fmt(format_args!(
+            "{}\n",
+            if x1 >= 10 && x1 <= 99 { 1 } else { 0 }
+        ))
+        .unwrap();
+        bw.flush().unwrap()
+    }
+}
+
+mod b2039 {
+    use super::*;
+    pub fn in_out() {
+        let mut br = BufReader::new(io::stdin().lock());
+        let mut bw = BufWriter::new(io::stdout().lock());
+        let mut buf = String::new();
+        br.read_line(&mut buf).unwrap();
+        let mut segs = buf.trim().split_whitespace();
+        let x1: u32 = segs.next().unwrap().parse().unwrap();
+        let x2: i32 = segs.next().unwrap().parse().unwrap();
+        bw.write_fmt(format_args!(
+            "{}\n",
+            if x2 < 0 {
+                '>'
+            } else {
+                match x1.cmp(&(x2 as u32)) {
+                    std::cmp::Ordering::Greater => '>',
+                    std::cmp::Ordering::Less => '<',
+                    std::cmp::Ordering::Equal => '=',
+                }
+            }
+        ))
+        .unwrap();
+        bw.flush().unwrap()
+    }
+}
+
+mod b2031 {
+    // 三角形面积计算公式：1/2*|x1(y2-y3)-y1(x2-x3)+(x2y3-x3y2)|
+    use super::*;
+    pub fn in_out() {
+        let mut br = BufReader::new(io::stdin().lock());
+        let mut bw = BufWriter::new(io::stdout().lock());
+        let mut buf = String::new();
+        br.read_line(&mut buf).unwrap();
+        let mut segs = buf.trim().split_whitespace();
+        let x1: f64 = segs.next().unwrap().parse().unwrap();
+        let y1: f64 = segs.next().unwrap().parse().unwrap();
+        let x2: f64 = segs.next().unwrap().parse().unwrap();
+        let y2: f64 = segs.next().unwrap().parse().unwrap();
+        let x3: f64 = segs.next().unwrap().parse().unwrap();
+        let y3: f64 = segs.next().unwrap().parse().unwrap();
+        bw.write_fmt(format_args!(
+            "{:.2}\n",
+            0.5 * (x1 * (y2 - y3) - y1 * (x2 - x3) + (x2 * y3 - x3 * y2)).abs()
+        ))
+        .unwrap();
+        bw.flush().unwrap()
+    }
+}
+
+mod b2030 {
+
+    use super::*;
+    pub fn in_out() {
+        let mut br = BufReader::new(io::stdin().lock());
+        let mut bw = BufWriter::new(io::stdout().lock());
+        let mut buf = String::new();
+        br.read_line(&mut buf).unwrap();
+        let mut segs = buf.trim().split_whitespace();
+        let x1: f64 = segs.next().unwrap().parse().unwrap();
+        let y1: f64 = segs.next().unwrap().parse().unwrap();
+        buf.clear();
+        br.read_line(&mut buf).unwrap();
+        let mut segs = buf.trim().split_whitespace();
+        let x2: f64 = segs.next().unwrap().parse().unwrap();
+        let y2: f64 = segs.next().unwrap().parse().unwrap();
+        bw.write_fmt(format_args!(
+            "{:.3}\n",
+            ((x1 - x2).abs().powi(2) + (y1 - y2).abs().powi(2)).sqrt()
+        ))
+        .unwrap();
+        bw.flush().unwrap()
+    }
+}
+
+mod b2029 {
+
+    use super::*;
+    const PI: f64 = 3.14;
+    pub fn in_out() {
+        let mut br = BufReader::new(io::stdin().lock());
+        let mut bw = BufWriter::new(io::stdout().lock());
+        let mut buf = String::new();
+        br.read_line(&mut buf).unwrap();
+        let mut segs = buf.trim().split_whitespace();
+        let h: f64 = segs.next().unwrap().parse().unwrap();
+        let r: f64 = segs.next().unwrap().parse().unwrap();
+        bw.write_fmt(format_args!("{}\n", (20000.0 / (r * r * PI * h)).ceil()))
+            .unwrap();
+        bw.flush().unwrap()
+    }
+}
+
+mod b2028 {
+
+    use super::*;
+
+    pub fn in_out() {
+        let mut br = BufReader::new(io::stdin().lock());
+        let mut bw = BufWriter::new(io::stdout().lock());
+        let mut buf = String::new();
+        br.read_line(&mut buf).unwrap();
+        buf.trim()
+            .as_bytes()
+            .iter()
+            .rev()
+            .for_each(|&v| bw.write_fmt(format_args!("{}", v - b'0')).unwrap());
+        bw.write(&[b'\n']).unwrap();
+        bw.flush().unwrap()
+    }
+}
+
+mod b2027 {
+
+    use super::*;
+
+    pub fn in_out() {
+        const PI: f64 = 3.14;
+        let mut br = BufReader::new(io::stdin().lock());
+        let mut bw = BufWriter::new(io::stdout().lock());
+        let mut buf = String::new();
+        br.read_line(&mut buf).unwrap();
+        let a: f64 = buf.trim().parse().unwrap();
+        bw.write_fmt(format_args!("{:.5}\n", 4.0 * PI * a * a * a / 3.0))
+            .unwrap();
+        bw.flush().unwrap()
+    }
+}
+
+mod b2026 {
+
+    use super::*;
+
+    pub fn in_out() {
+        let mut br = BufReader::new(io::stdin().lock());
+        let mut bw = BufWriter::new(io::stdout().lock());
+        let mut buf = String::new();
+        br.read_line(&mut buf).unwrap();
+        let mut segs = buf.trim().split_whitespace();
+        let a: f64 = segs.next().unwrap().parse().unwrap();
+        let b: f64 = segs.next().unwrap().parse().unwrap();
+        bw.write_fmt(format_args!("{:.4}\n", a % b)).unwrap();
+        bw.flush().unwrap()
+    }
 }
 
 mod b2025 {
