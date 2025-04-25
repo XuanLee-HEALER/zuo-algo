@@ -2,7 +2,7 @@
 use std::io::{self, BufRead, BufReader, BufWriter, Write};
 
 fn main() {
-    b2039::in_out();
+    b2038::in_out();
 }
 
 mod b2043 {
@@ -112,6 +112,129 @@ mod b2039 {
             }
         ))
         .unwrap();
+        bw.flush().unwrap()
+    }
+}
+
+mod b2038 {
+    use super::*;
+    pub fn in_out() {
+        let mut br = BufReader::new(io::stdin().lock());
+        let mut bw = BufWriter::new(io::stdout().lock());
+        let mut buf = String::new();
+        br.read_line(&mut buf).unwrap();
+        let a: &u8 = buf.trim().as_bytes().first().unwrap();
+        bw.write_fmt(format_args!("{}\n", if *a & 1 == 1 { "YES" } else { "NO" }))
+            .unwrap();
+        bw.flush().unwrap()
+    }
+}
+
+mod b2037 {
+    use super::*;
+    pub fn in_out() {
+        let mut br = BufReader::new(io::stdin().lock());
+        let mut bw = BufWriter::new(io::stdout().lock());
+        let mut buf = String::new();
+        br.read_line(&mut buf).unwrap();
+        let a: i32 = buf.trim().parse().unwrap();
+        bw.write_fmt(format_args!(
+            "{}\n",
+            if a & 1 == 1 { "odd" } else { "even" }
+        ))
+        .unwrap();
+        bw.flush().unwrap()
+    }
+}
+
+mod b2036 {
+    use super::*;
+    pub fn in_out() {
+        let mut br = BufReader::new(io::stdin().lock());
+        let mut bw = BufWriter::new(io::stdout().lock());
+        let mut buf = String::new();
+        br.read_line(&mut buf).unwrap();
+        let a: f64 = buf.trim().parse().unwrap();
+        bw.write_fmt(format_args!("{:.2}\n", a.abs())).unwrap();
+        bw.flush().unwrap()
+    }
+}
+
+mod b2035 {
+    use super::*;
+    pub fn in_out() {
+        let mut br = BufReader::new(io::stdin().lock());
+        let mut bw = BufWriter::new(io::stdout().lock());
+        let mut buf = String::new();
+        br.read_line(&mut buf).unwrap();
+        let a: i32 = buf.trim().parse().unwrap();
+        bw.write_fmt(format_args!(
+            "{}\n",
+            match a.cmp(&0) {
+                std::cmp::Ordering::Greater => "positive",
+                std::cmp::Ordering::Less => "negative",
+                std::cmp::Ordering::Equal => "zero",
+            }
+        ))
+        .unwrap();
+        bw.flush().unwrap()
+    }
+}
+
+mod b2034 {
+    use super::*;
+    pub fn in_out() {
+        let mut br = BufReader::new(io::stdin().lock());
+        let mut bw = BufWriter::new(io::stdout().lock());
+        let mut buf = String::new();
+        br.read_line(&mut buf).unwrap();
+        let a: u32 = buf.trim().parse().unwrap();
+        bw.write_fmt(format_args!("{}\n", q_exp(a))).unwrap();
+        bw.flush().unwrap()
+    }
+
+    fn q_exp(mut n: u32) -> u32 {
+        let mut r = 1;
+        let mut x = 2;
+        while n > 0 {
+            if n & 1 == 1 {
+                r *= x;
+            }
+            x *= x;
+            n >>= 1
+        }
+        r
+    }
+}
+
+mod b2033 {
+    use super::*;
+    pub fn in_out() {
+        let mut br = BufReader::new(io::stdin().lock());
+        let mut bw = BufWriter::new(io::stdout().lock());
+        let mut buf = String::new();
+        br.read_line(&mut buf).unwrap();
+        let mut segs = buf.trim().split_whitespace();
+        let a1: u32 = segs.next().unwrap().parse().unwrap();
+        let a2: u32 = segs.next().unwrap().parse().unwrap();
+        bw.write_fmt(format_args!("{}\n", a1 * a2)).unwrap();
+        bw.flush().unwrap()
+    }
+}
+
+mod b2032 {
+    use super::*;
+    pub fn in_out() {
+        let mut br = BufReader::new(io::stdin().lock());
+        let mut bw = BufWriter::new(io::stdout().lock());
+        let mut buf = String::new();
+        br.read_line(&mut buf).unwrap();
+        let mut segs = buf.trim().split_whitespace();
+        let a1: i32 = segs.next().unwrap().parse().unwrap();
+        let a2: i32 = segs.next().unwrap().parse().unwrap();
+        let n: i32 = segs.next().unwrap().parse().unwrap();
+        bw.write_fmt(format_args!("{}\n", a1 + (n - 1) * (a2 - a1)))
+            .unwrap();
         bw.flush().unwrap()
     }
 }
