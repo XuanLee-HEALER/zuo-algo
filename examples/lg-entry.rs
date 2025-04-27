@@ -2,7 +2,185 @@
 use std::io::{self, BufRead, BufReader, BufWriter, Write};
 
 fn main() {
-    b2038::in_out();
+    let mut br = BufReader::new(io::stdin().lock());
+    let mut bw = BufWriter::new(io::stdout().lock());
+    let mut buf = String::new();
+    b2050::in_out(&mut br, &mut bw, &mut buf);
+    bw.flush().unwrap()
+}
+
+mod b2050 {
+    use std::io::{StdinLock, StdoutLock};
+
+    use super::*;
+    pub fn in_out(
+        br: &mut BufReader<StdinLock<'static>>,
+        bw: &mut BufWriter<StdoutLock<'static>>,
+        buf: &mut String,
+    ) {
+        br.read_line(buf).unwrap();
+        let mut segs = buf.trim().split_whitespace();
+        let x: i32 = segs.next().unwrap().parse().unwrap();
+        let y: i32 = segs.next().unwrap().parse().unwrap();
+        let z: i32 = segs.next().unwrap().parse().unwrap();
+        let mut j = 0;
+        if x + y > z {
+            j += 1
+        };
+        if x + z > y {
+            j += 1
+        };
+        if y + z > x {
+            j += 1
+        };
+        bw.write_fmt(format_args!("{}\n", if j == 3 { 1 } else { 0 }))
+            .unwrap();
+    }
+}
+
+mod b2049 {
+    use std::io::{StdinLock, StdoutLock};
+
+    use super::*;
+    pub fn in_out(
+        br: &mut BufReader<StdinLock<'static>>,
+        bw: &mut BufWriter<StdoutLock<'static>>,
+        buf: &mut String,
+    ) {
+        br.read_line(buf).unwrap();
+        let mut segs = buf.trim().split_whitespace();
+        let x: i32 = segs.next().unwrap().parse().unwrap();
+        let y: i32 = segs.next().unwrap().parse().unwrap();
+        let z: i32 = segs.next().unwrap().parse().unwrap();
+        bw.write_fmt(format_args!("{}\n", x.max(y).max(z))).unwrap();
+    }
+}
+
+mod b2048 {
+    use std::io::{StdinLock, StdoutLock};
+
+    use super::*;
+    pub fn in_out(
+        br: &mut BufReader<StdinLock<'static>>,
+        bw: &mut BufWriter<StdoutLock<'static>>,
+        buf: &mut String,
+    ) {
+        br.read_line(buf).unwrap();
+        let mut segs = buf.trim().split_whitespace();
+        let x: usize = segs.next().unwrap().parse().unwrap();
+        let c: char = segs.next().unwrap().parse().unwrap();
+        bw.write_fmt(format_args!(
+            "{}\n",
+            match x {
+                x if x <= 1000 => 8,
+                _ => 8 + ((x - 501) / 500) * 4,
+            } + if c == 'y' { 5 } else { 0 }
+        ))
+        .unwrap();
+    }
+}
+
+mod b2047 {
+    use std::io::{StdinLock, StdoutLock};
+
+    use super::*;
+    pub fn in_out(
+        br: &mut BufReader<StdinLock<'static>>,
+        bw: &mut BufWriter<StdoutLock<'static>>,
+        buf: &mut String,
+    ) {
+        br.read_line(buf).unwrap();
+        let x: f64 = buf.trim().parse().unwrap();
+        bw.write_fmt(format_args!(
+            "{:.3}\n",
+            match x {
+                x if x >= 0.0 && x < 5.0 => -x + 2.5,
+                x if x >= 5.0 && x < 10.0 => 2.0 - 1.5 * (x - 3.0) * (x - 3.0),
+                _ => x / 2.0 - 1.5,
+            }
+        ))
+        .unwrap();
+    }
+}
+
+mod b2046 {
+    use std::io::{StdinLock, StdoutLock};
+
+    use super::*;
+    pub fn in_out(
+        br: &mut BufReader<StdinLock<'static>>,
+        bw: &mut BufWriter<StdoutLock<'static>>,
+        buf: &mut String,
+    ) {
+        const FT: f64 = 50.0;
+        br.read_line(buf).unwrap();
+        let x: f64 = buf.trim().parse().unwrap();
+        let bk = x / 3.0 + FT;
+        let wk = x / 1.2;
+        bw.write_fmt(format_args!(
+            "{}\n",
+            if bk < wk {
+                "Bike"
+            } else if bk == wk {
+                "All"
+            } else {
+                "Walk"
+            }
+        ))
+        .unwrap();
+    }
+}
+
+mod b2045 {
+    use std::io::{StdinLock, StdoutLock};
+
+    use super::*;
+    pub fn in_out(
+        br: &mut BufReader<StdinLock<'static>>,
+        bw: &mut BufWriter<StdoutLock<'static>>,
+        buf: &mut String,
+    ) {
+        const P: usize = 7;
+        br.read_line(buf).unwrap();
+        let x: usize = buf.trim().parse().unwrap();
+        let r = x % P;
+        bw.write_fmt(format_args!(
+            "{}\n",
+            if r == 1 || r == 3 || r == 5 {
+                "NO"
+            } else {
+                "YES"
+            }
+        ))
+        .unwrap();
+    }
+}
+
+mod b2044 {
+    use std::io::{StdinLock, StdoutLock};
+
+    use super::*;
+    pub fn in_out(
+        br: &mut BufReader<StdinLock<'static>>,
+        bw: &mut BufWriter<StdoutLock<'static>>,
+        buf: &mut String,
+    ) {
+        br.read_line(buf).unwrap();
+        let mut segs = buf.trim().split_whitespace();
+        let x1: i32 = segs.next().unwrap().parse().unwrap();
+        let x2: i32 = segs.next().unwrap().parse().unwrap();
+        let x3: i32 = segs.next().unwrap().parse().unwrap();
+        bw.write_fmt(format_args!(
+            "{}\n",
+            match (x1, x2, x3) {
+                (x1, x2, x3) if x1 < 60 && x2 >= 60 && x3 >= 60 => 1,
+                (x1, x2, x3) if x1 >= 60 && x2 < 60 && x3 >= 60 => 1,
+                (x1, x2, x3) if x1 >= 60 && x2 >= 60 && x3 < 60 => 1,
+                _ => 0,
+            }
+        ))
+        .unwrap();
+    }
 }
 
 mod b2043 {
