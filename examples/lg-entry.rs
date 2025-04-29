@@ -5,8 +5,253 @@ fn main() {
     let mut br = BufReader::new(io::stdin().lock());
     let mut bw = BufWriter::new(io::stdout().lock());
     let mut buf = String::new();
-    b2050::in_out(&mut br, &mut bw, &mut buf);
+    b2059_2060::in_out(&mut br, &mut bw, &mut buf);
     bw.flush().unwrap()
+}
+
+mod b2059_2060 {
+    use std::io::{StdinLock, StdoutLock};
+
+    use super::*;
+    pub fn in_out(
+        br: &mut BufReader<StdinLock<'static>>,
+        bw: &mut BufWriter<StdoutLock<'static>>,
+        buf: &mut String,
+    ) {
+        br.read_line(buf).unwrap();
+        let mut segs = buf.trim().split_whitespace();
+        let b: i32 = segs.next().unwrap().parse().unwrap();
+        let e: i32 = segs.next().unwrap().parse().unwrap();
+        // b2059
+        // bw.write_fmt(format_args!(
+        //     "{}\n",
+        //     (b..=e).filter(|v| *v & 1 == 1).sum::<i32>()
+        // ))
+        // b2060
+        bw.write_fmt(format_args!(
+            "{}\n",
+            (b..=e).filter(|v| *v % 17 == 0).sum::<i32>()
+        ))
+        .unwrap()
+    }
+}
+
+mod b2058 {
+    use std::io::{StdinLock, StdoutLock};
+
+    use super::*;
+    pub fn in_out(
+        br: &mut BufReader<StdinLock<'static>>,
+        bw: &mut BufWriter<StdoutLock<'static>>,
+        buf: &mut String,
+    ) {
+        br.read_line(buf).unwrap();
+        let n: usize = buf.trim().parse().unwrap();
+        let mut res = (0, 0, 0);
+        for _ in 0..n {
+            buf.clear();
+            br.read_line(buf).unwrap();
+            let mut segs = buf.trim().split_whitespace();
+            let gold: i32 = segs.next().unwrap().parse().unwrap();
+            let silver: i32 = segs.next().unwrap().parse().unwrap();
+            let copper: i32 = segs.next().unwrap().parse().unwrap();
+            res.0 += gold;
+            res.1 += silver;
+            res.2 += copper;
+        }
+        bw.write_fmt(format_args!(
+            "{} {} {} {}\n",
+            res.0,
+            res.1,
+            res.2,
+            res.0 + res.1 + res.2
+        ))
+        .unwrap()
+    }
+}
+
+mod b2057 {
+    use std::io::{StdinLock, StdoutLock};
+
+    use super::*;
+    pub fn in_out(
+        br: &mut BufReader<StdinLock<'static>>,
+        bw: &mut BufWriter<StdoutLock<'static>>,
+        buf: &mut String,
+    ) {
+        br.read_line(buf).unwrap();
+        buf.clear();
+        br.read_line(buf).unwrap();
+        let max = buf
+            .trim()
+            .split_whitespace()
+            .map(|v| v.parse::<i32>().unwrap())
+            .max()
+            .unwrap();
+        bw.write_fmt(format_args!("{}\n", max)).unwrap()
+    }
+}
+
+mod b2056 {
+    use std::io::{StdinLock, StdoutLock};
+
+    use super::*;
+    pub fn in_out(
+        br: &mut BufReader<StdinLock<'static>>,
+        bw: &mut BufWriter<StdoutLock<'static>>,
+        buf: &mut String,
+    ) {
+        br.read_line(buf).unwrap();
+        let n: usize = buf.trim().parse().unwrap();
+        let mut sum = 0;
+        for _ in 0..n {
+            buf.clear();
+            br.read_line(buf).unwrap();
+            sum += buf.trim().parse::<i32>().unwrap();
+        }
+        bw.write_fmt(format_args!("{} {:.5}\n", sum, sum as f64 / n as f64))
+            .unwrap()
+    }
+}
+
+mod b2055 {
+    use std::io::{StdinLock, StdoutLock};
+
+    use super::*;
+    pub fn in_out(
+        br: &mut BufReader<StdinLock<'static>>,
+        bw: &mut BufWriter<StdoutLock<'static>>,
+        buf: &mut String,
+    ) {
+        br.read_line(buf).unwrap();
+        let n: usize = buf.trim().parse().unwrap();
+        buf.clear();
+        br.read_line(buf).unwrap();
+        let sum = buf
+            .trim()
+            .split_whitespace()
+            .map(|v| v.parse::<f64>().unwrap())
+            .sum::<f64>();
+        bw.write_fmt(format_args!("{:.2}\n", sum / n as f64))
+            .unwrap()
+    }
+}
+
+mod b2054 {
+    use std::io::{StdinLock, StdoutLock};
+
+    use super::*;
+    pub fn in_out(
+        br: &mut BufReader<StdinLock<'static>>,
+        bw: &mut BufWriter<StdoutLock<'static>>,
+        buf: &mut String,
+    ) {
+        br.read_line(buf).unwrap();
+        let n: usize = buf.trim().parse().unwrap();
+        let mut sum = 0;
+        for _ in 0..n {
+            buf.clear();
+            br.read_line(buf).unwrap();
+            sum += buf.trim().parse::<i32>().unwrap();
+        }
+        bw.write_fmt(format_args!("{:.2}\n", sum as f64 / n as f64))
+            .unwrap()
+    }
+}
+
+mod b2053 {
+    use std::io::{StdinLock, StdoutLock};
+
+    use super::*;
+    pub fn in_out(
+        br: &mut BufReader<StdinLock<'static>>,
+        bw: &mut BufWriter<StdoutLock<'static>>,
+        buf: &mut String,
+    ) {
+        br.read_line(buf).unwrap();
+        let mut segs = buf.trim().split_whitespace();
+        let a: f64 = segs.next().unwrap().parse().unwrap();
+        let b: f64 = segs.next().unwrap().parse().unwrap();
+        let c: f64 = segs.next().unwrap().parse().unwrap();
+        let j = b.powf(2.0) - 4.0 * a * c;
+        if j < 0.0 {
+            bw.write_fmt(format_args!("No answer!\n")).unwrap()
+        } else {
+            let r = j.sqrt() / 2.0 / a;
+            let p = -b / 2.0 / a;
+            let min = (p + r).min(p - r);
+            let max = (p + r).max(p - r);
+            bw.write_fmt(format_args!(
+                "{}\n",
+                if p + r == p - r {
+                    format!("x1=x2={:.5}", p + r)
+                } else {
+                    format!("x1={:.5};x2={:.5}", min, max)
+                }
+            ))
+            .unwrap();
+        }
+    }
+}
+
+mod b2052 {
+    use std::io::{StdinLock, StdoutLock};
+
+    use super::*;
+    pub fn in_out(
+        br: &mut BufReader<StdinLock<'static>>,
+        bw: &mut BufWriter<StdoutLock<'static>>,
+        buf: &mut String,
+    ) {
+        br.read_line(buf).unwrap();
+        let mut segs = buf.trim().split_whitespace();
+        let x: i32 = segs.next().unwrap().parse().unwrap();
+        let y: i32 = segs.next().unwrap().parse().unwrap();
+        let op: char = segs.next().unwrap().parse().unwrap();
+        bw.write_fmt(format_args!("{}\n", compute(x, y, op)))
+            .unwrap();
+    }
+
+    fn compute(v1: i32, v2: i32, op: char) -> String {
+        match op {
+            '+' => format!("{}", v1 + v2),
+            '-' => format!("{}", v1 - v2),
+            '*' => format!("{}", v1 * v2),
+            '/' => {
+                if v2 == 0 {
+                    "Divided by zero!".into()
+                } else {
+                    format!("{}", v1 / v2)
+                }
+            }
+            _ => "Invalid operator!".into(),
+        }
+    }
+}
+
+mod b2051 {
+    use std::io::{StdinLock, StdoutLock};
+
+    use super::*;
+    pub fn in_out(
+        br: &mut BufReader<StdinLock<'static>>,
+        bw: &mut BufWriter<StdoutLock<'static>>,
+        buf: &mut String,
+    ) {
+        br.read_line(buf).unwrap();
+        let mut segs = buf.trim().split_whitespace();
+        let x: i32 = segs.next().unwrap().parse().unwrap();
+        let y: i32 = segs.next().unwrap().parse().unwrap();
+        bw.write_fmt(format_args!(
+            "{}\n",
+            if x >= -1 && x <= 1 && y >= -1 && y <= 1 {
+                "yes"
+            } else {
+                "no"
+            }
+        ))
+        .unwrap();
+    }
 }
 
 mod b2050 {
