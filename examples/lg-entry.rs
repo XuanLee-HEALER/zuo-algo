@@ -5,8 +5,377 @@ fn main() {
     let mut br = BufReader::new(io::stdin().lock());
     let mut bw = BufWriter::new(io::stdout().lock());
     let mut buf = String::new();
-    b2059_2060::in_out(&mut br, &mut bw, &mut buf);
+    b2070::in_out(&mut br, &mut bw, &mut buf);
     bw.flush().unwrap()
+}
+
+mod b2070 {
+    use std::io::{StdinLock, StdoutLock};
+
+    use super::*;
+    pub fn in_out(
+        br: &mut BufReader<StdinLock<'static>>,
+        bw: &mut BufWriter<StdoutLock<'static>>,
+        buf: &mut String,
+    ) {
+        br.read_line(buf).unwrap();
+        let n: usize = buf.trim().parse().unwrap();
+        let mut res = 0.0;
+        for i in 1..=n {
+            res += (if i & 1 == 0 { -1.0 } else { 1.0 }) * 1.0 / i as f64
+        }
+        bw.write_fmt(format_args!("{:.4}\n", res)).unwrap();
+        bw.flush().unwrap()
+    }
+}
+
+mod b2069 {
+    use std::io::{StdinLock, StdoutLock};
+
+    use super::*;
+    pub fn in_out(
+        br: &mut BufReader<StdinLock<'static>>,
+        bw: &mut BufWriter<StdoutLock<'static>>,
+        buf: &mut String,
+    ) {
+        br.read_line(buf).unwrap();
+        let n: usize = buf.trim().parse().unwrap();
+        bw.write_fmt(format_args!("{:.4}\n", cal(n))).unwrap();
+        bw.flush().unwrap()
+    }
+
+    fn item(n: usize, cache: &mut [Option<(f64, f64)>]) -> (f64, f64) {
+        match n {
+            0 => unreachable!(),
+            1 => {
+                cache[1] = Some((2.0, 1.0));
+                cache[1].unwrap()
+            }
+            n => {
+                if let Some((l0, l1)) = cache[n - 1] {
+                    cache[n] = Some((l0 + l1, l0));
+                } else {
+                    let (l0, l1) = item(n - 1, cache);
+                    cache[n] = Some((l0 + l1, l0));
+                }
+                cache[n].unwrap()
+            }
+        }
+    }
+
+    fn cal(n: usize) -> f64 {
+        let mut cache = vec![None; n + 1];
+        let mut res = 0.0;
+        for i in 1..=n {
+            let (l0, l1) = item(i, &mut cache);
+            res += l0 / l1
+        }
+        res
+    }
+}
+
+mod b2068 {
+    use std::io::{StdinLock, StdoutLock};
+
+    use super::*;
+    pub fn in_out(
+        br: &mut BufReader<StdinLock<'static>>,
+        bw: &mut BufWriter<StdoutLock<'static>>,
+        buf: &mut String,
+    ) {
+        br.read_line(buf).unwrap();
+        buf.clear();
+        br.read_line(buf).unwrap();
+        bw.write_fmt(format_args!(
+            "{}\n",
+            buf.trim()
+                .split_whitespace()
+                .map(|v| v.parse().unwrap())
+                .collect::<Vec<usize>>()
+                .iter()
+                .filter(|&v| {
+                    let mut v = *v;
+                    let b1 = v % 10;
+                    v /= 10;
+                    let b2 = v % 10;
+                    v /= 10;
+                    let b3 = v % 10;
+                    v /= 10;
+                    let b4 = v % 10;
+                    b1 > b2 + b3 + b4
+                })
+                .count()
+        ))
+        .unwrap();
+        bw.flush().unwrap()
+    }
+}
+
+mod b2067 {
+    use std::io::{StdinLock, StdoutLock};
+
+    use super::*;
+    pub fn in_out(
+        br: &mut BufReader<StdinLock<'static>>,
+        bw: &mut BufWriter<StdoutLock<'static>>,
+        buf: &mut String,
+    ) {
+        br.read_line(buf).unwrap();
+        let mut n: usize = buf.trim().parse().unwrap();
+        buf.clear();
+        br.read_line(buf).unwrap();
+        let p: usize = buf.trim().parse().unwrap();
+        buf.clear();
+        br.read_line(buf).unwrap();
+        let mut ct = 0;
+        buf.trim()
+            .split_whitespace()
+            .map(|v| v.parse().unwrap())
+            .collect::<Vec<usize>>()
+            .iter()
+            .for_each(|&v| {
+                if n >= v {
+                    n -= v;
+                    ct += 1;
+                }
+            });
+        bw.write_fmt(format_args!("{}\n", p - ct)).unwrap();
+        bw.flush().unwrap()
+    }
+}
+
+mod b2066 {
+    use std::io::{StdinLock, StdoutLock};
+
+    use super::*;
+    pub fn in_out(
+        br: &mut BufReader<StdinLock<'static>>,
+        bw: &mut BufWriter<StdoutLock<'static>>,
+        buf: &mut String,
+    ) {
+        br.read_line(buf).unwrap();
+        let n: usize = buf.trim().parse().unwrap();
+        const V: f64 = 50.0;
+        const UP: f64 = 1.0;
+        const DOWN: f64 = 0.5;
+        let mut all: f64 = 0.0;
+        for _ in 0..n {
+            buf.clear();
+            br.read_line(buf).unwrap();
+            let mut segs = buf.trim().split_whitespace();
+            let x: f64 = segs.next().unwrap().parse().unwrap();
+            let y: f64 = segs.next().unwrap().parse().unwrap();
+            let p: f64 = segs.next().unwrap().parse().unwrap();
+            all += (x.powf(2.0) + y.powf(2.0)).sqrt() / V * 2.0 + p * UP + p * DOWN;
+        }
+        bw.write_fmt(format_args!("{:.0}\n", all.ceil())).unwrap();
+        bw.flush().unwrap()
+    }
+}
+
+mod b2065 {
+    use std::io::{StdinLock, StdoutLock};
+
+    use super::*;
+    pub fn in_out(
+        br: &mut BufReader<StdinLock<'static>>,
+        bw: &mut BufWriter<StdoutLock<'static>>,
+        buf: &mut String,
+    ) {
+        br.read_line(buf).unwrap();
+        let n: usize = buf.trim().parse().unwrap();
+        buf.clear();
+        br.read_line(buf).unwrap();
+        let mut segs = buf.trim().split_whitespace();
+        let a: f64 = segs.next().unwrap().parse().unwrap();
+        let s: f64 = segs.next().unwrap().parse().unwrap();
+        let strd = s / a;
+        for _ in 1..n {
+            buf.clear();
+            br.read_line(buf).unwrap();
+            let mut segs = buf.trim().split_whitespace();
+            let a: f64 = segs.next().unwrap().parse().unwrap();
+            let n: f64 = segs.next().unwrap().parse().unwrap();
+            let c = n / a;
+            bw.write_fmt(format_args!(
+                "{}\n",
+                if c - strd > 0.05 {
+                    "better"
+                } else if strd - c > 0.05 {
+                    "worse"
+                } else {
+                    "same"
+                }
+            ))
+            .unwrap();
+        }
+        bw.flush().unwrap()
+    }
+}
+
+mod b2064 {
+    use std::io::{StdinLock, StdoutLock};
+
+    use super::*;
+    pub fn in_out(
+        br: &mut BufReader<StdinLock<'static>>,
+        bw: &mut BufWriter<StdoutLock<'static>>,
+        buf: &mut String,
+    ) {
+        br.read_line(buf).unwrap();
+        let n: usize = buf.trim().parse().unwrap();
+        for _ in 0..n {
+            buf.clear();
+            br.read_line(buf).unwrap();
+            let loc: i32 = buf.trim().parse().unwrap();
+            bw.write_fmt(format_args!(
+                "{}\n",
+                match loc {
+                    0 => 0,
+                    1 => 1,
+                    n if n > 1 => {
+                        let rel = Matrix::new_with(2, 2, vec![1, 1, 1, 0]);
+                        let ini = Matrix::new_with(1, 2, vec![1, 0]);
+                        let res = matrix_multi(&ini, &matrix_exp(rel, loc - 1));
+                        res.2[0]
+                    }
+                    _ => unreachable!(),
+                }
+            ))
+            .unwrap()
+        }
+        bw.flush().unwrap()
+    }
+
+    struct Matrix(usize, usize, Vec<i32>);
+
+    impl Matrix {
+        fn new() -> Self {
+            Self(0, 0, vec![])
+        }
+
+        fn new_with(r: usize, c: usize, v: Vec<i32>) -> Self {
+            Self(r, c, v)
+        }
+
+        fn new_unit(a: usize) -> Self {
+            let mut v = vec![0; a * a];
+            for i in 0..a {
+                v[i * a + i] = 1;
+            }
+            Self(a, a, v)
+        }
+    }
+
+    fn matrix_multi(Matrix(r1, c1, v1): &Matrix, Matrix(r2, c2, v2): &Matrix) -> Matrix {
+        assert_eq!(c1, r2);
+        let mut res = Matrix::new();
+        res.0 = *r1;
+        res.1 = *c2;
+        res.2 = vec![0; r1 * c2];
+        for i in 0..*r1 {
+            for j in 0..*c2 {
+                let mut cur = 0;
+                for k in 0..*r2 {
+                    cur += v1[i * c1 + k] * v2[k * c2 + j];
+                }
+                res.2[i * (*c2) + j] = cur;
+            }
+        }
+        res
+    }
+
+    fn matrix_exp(mut matrix: Matrix, mut a: i32) -> Matrix {
+        assert!(matrix.0 == matrix.1);
+        let mut res = Matrix::new_unit(matrix.0);
+        while a > 0 {
+            if a & 1 != 0 {
+                res = matrix_multi(&res, &matrix);
+            }
+            matrix = matrix_multi(&matrix, &matrix);
+            a >>= 1;
+        }
+        res
+    }
+}
+
+mod b2063 {
+    use std::io::{StdinLock, StdoutLock};
+
+    use super::*;
+    pub fn in_out(
+        br: &mut BufReader<StdinLock<'static>>,
+        bw: &mut BufWriter<StdoutLock<'static>>,
+        buf: &mut String,
+    ) {
+        br.read_line(buf).unwrap();
+        let mut segs = buf.trim().split_whitespace();
+        let a: f64 = segs.next().unwrap().parse().unwrap();
+        let n: f64 = segs.next().unwrap().parse().unwrap();
+        bw.write_fmt(format_args!("{:.4}\n", a * 1.001_f64.powf(n)))
+            .unwrap();
+        bw.flush().unwrap()
+    }
+}
+
+mod b2062 {
+    use std::io::{StdinLock, StdoutLock};
+
+    use super::*;
+    pub fn in_out(
+        br: &mut BufReader<StdinLock<'static>>,
+        bw: &mut BufWriter<StdoutLock<'static>>,
+        buf: &mut String,
+    ) {
+        br.read_line(buf).unwrap();
+        let mut segs = buf.trim().split_whitespace();
+        let a: i32 = segs.next().unwrap().parse().unwrap();
+        let n: i32 = segs.next().unwrap().parse().unwrap();
+        bw.write_fmt(format_args!("{}\n", exp(a, n))).unwrap();
+        bw.flush().unwrap()
+    }
+
+    fn exp(mut a: i32, mut n: i32) -> i32 {
+        let mut res = 1;
+        while n > 0 {
+            if n & 1 != 0 {
+                res *= a;
+            }
+            a = a * a;
+            n >>= 1
+        }
+        res
+    }
+}
+
+mod b2061 {
+    use std::io::{StdinLock, StdoutLock};
+
+    use super::*;
+    pub fn in_out(
+        br: &mut BufReader<StdinLock<'static>>,
+        bw: &mut BufWriter<StdoutLock<'static>>,
+        buf: &mut String,
+    ) {
+        br.read_line(buf).unwrap();
+        buf.clear();
+        br.read_line(buf).unwrap();
+        let arr: Vec<i32> = buf
+            .trim()
+            .split_whitespace()
+            .map(|v| v.parse().unwrap())
+            .collect();
+        let mut ct = (0, 0, 0);
+        arr.iter().for_each(|&v| match v {
+            1 => ct.0 += 1,
+            5 => ct.1 += 1,
+            10 => ct.2 += 1,
+            _ => (),
+        });
+        bw.write_fmt(format_args!("{}\n{}\n{}\n", ct.0, ct.1, ct.2))
+            .unwrap();
+        bw.flush().unwrap()
+    }
 }
 
 mod b2059_2060 {
