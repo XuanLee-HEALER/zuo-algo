@@ -5,8 +5,272 @@ fn main() {
     let mut br = BufReader::new(io::stdin().lock());
     let mut bw = BufWriter::new(io::stdout().lock());
     let mut buf = String::new();
-    b2070::in_out(&mut br, &mut bw, &mut buf);
+    b2080::in_out(&mut br, &mut bw, &mut buf);
     bw.flush().unwrap()
+}
+
+mod b2080 {
+    use std::io::{StdinLock, StdoutLock};
+
+    use super::*;
+    pub fn in_out(
+        br: &mut BufReader<StdinLock<'static>>,
+        bw: &mut BufWriter<StdoutLock<'static>>,
+        buf: &mut String,
+    ) {
+        br.read_line(buf).unwrap();
+        let mut segs = buf.trim().split_whitespace();
+        let x: f64 = segs.next().unwrap().parse().unwrap();
+        let n: usize = segs.next().unwrap().parse().unwrap();
+        let mut r = 1.0;
+        let mut old = 1.0;
+        for _ in 0..n {
+            old = old * x;
+            r += old;
+        }
+        bw.write_fmt(format_args!("{:.2}\n", r)).unwrap()
+    }
+}
+
+mod b2079 {
+    use std::io::{StdinLock, StdoutLock};
+
+    use super::*;
+    pub fn in_out(
+        br: &mut BufReader<StdinLock<'static>>,
+        bw: &mut BufWriter<StdoutLock<'static>>,
+        buf: &mut String,
+    ) {
+        br.read_line(buf).unwrap();
+        let n: usize = buf.trim().parse().unwrap();
+        let mut r = 1.0;
+        let mut old = 1.0;
+        for i in 1..=n {
+            old = old * i as f64;
+            r += 1.0 / old
+        }
+        bw.write_fmt(format_args!("{:.10}\n", r)).unwrap()
+    }
+}
+
+mod b2078 {
+    use std::io::{StdinLock, StdoutLock};
+
+    use super::*;
+    pub fn in_out(
+        br: &mut BufReader<StdinLock<'static>>,
+        bw: &mut BufWriter<StdoutLock<'static>>,
+        buf: &mut String,
+    ) {
+        br.read_line(buf).unwrap();
+        let mut segs = buf.trim().split_whitespace();
+        let mut m: usize = segs.next().unwrap().parse().unwrap();
+        let k: usize = segs.next().unwrap().parse().unwrap();
+        let mut r = 0;
+        while m > 0 {
+            if m % 10 == 3 {
+                r += 1
+            }
+            m /= 10
+        }
+        bw.write_fmt(format_args!("{}\n", if r == k { "YES" } else { "NO" }))
+            .unwrap()
+    }
+}
+
+mod b2077 {
+    use std::io::{StdinLock, StdoutLock};
+
+    use super::*;
+    pub fn in_out(
+        br: &mut BufReader<StdinLock<'static>>,
+        bw: &mut BufWriter<StdoutLock<'static>>,
+        buf: &mut String,
+    ) {
+        br.read_line(buf).unwrap();
+        let mut n: usize = buf.trim().parse().unwrap();
+        loop {
+            if n == 1 {
+                bw.write_fmt(format_args!("End\n")).unwrap();
+                break;
+            }
+            if n & 1 > 0 {
+                let r = n * 3 + 1;
+                bw.write_fmt(format_args!("{}*3+1={}\n", n, r)).unwrap();
+                n = r;
+            } else {
+                let r = n / 2;
+                bw.write_fmt(format_args!("{}/2={}\n", n, r)).unwrap();
+                n = r;
+            }
+        }
+    }
+}
+
+mod b2076 {
+    use std::io::{StdinLock, StdoutLock};
+
+    use super::*;
+    pub fn in_out(
+        br: &mut BufReader<StdinLock<'static>>,
+        bw: &mut BufWriter<StdoutLock<'static>>,
+        buf: &mut String,
+    ) {
+        br.read_line(buf).unwrap();
+        let mut h: f64 = buf.trim().parse().unwrap();
+        let mut t_h = 0.0;
+        for _ in 0..10 {
+            t_h += h;
+            h /= 2.0;
+            t_h += h;
+        }
+        bw.write_fmt(format_args!("{}\n{}\n", t_h - h, h)).unwrap()
+    }
+}
+
+mod b2075 {
+    use std::io::{StdinLock, StdoutLock};
+
+    use super::*;
+    pub fn in_out(
+        br: &mut BufReader<StdinLock<'static>>,
+        bw: &mut BufWriter<StdoutLock<'static>>,
+        buf: &mut String,
+    ) {
+        br.read_line(buf).unwrap();
+        let mut segs = buf.trim().split_whitespace();
+        let a: usize = segs.next().unwrap().parse().unwrap();
+        let b: usize = segs.next().unwrap().parse().unwrap();
+        bw.write_fmt(format_args!("{:03}\n", q_exp(a, b, 1000)))
+            .unwrap()
+    }
+
+    fn q_exp(mut a: usize, mut b: usize, r: usize) -> usize {
+        let mut res = 1;
+        while b > 0 {
+            if b & 1 != 0 {
+                res = (res * a) % r;
+            }
+            a = (a * a) % r;
+            b >>= 1
+        }
+        res
+    }
+}
+
+mod b2074 {
+    use std::io::{StdinLock, StdoutLock};
+
+    use super::*;
+    pub fn in_out(
+        br: &mut BufReader<StdinLock<'static>>,
+        bw: &mut BufWriter<StdoutLock<'static>>,
+        buf: &mut String,
+    ) {
+        br.read_line(buf).unwrap();
+        let mut segs = buf.trim().split_whitespace();
+        let a: usize = segs.next().unwrap().parse().unwrap();
+        let b: usize = segs.next().unwrap().parse().unwrap();
+        bw.write_fmt(format_args!(
+            "{}\n",
+            match q_exp(a, b, 7) {
+                0 => "Sunday",
+                1 => "Monday",
+                2 => "Tuesday",
+                3 => "Wednesday",
+                4 => "Thursday",
+                5 => "Friday",
+                6 => "Saturday",
+                _ => unreachable!(),
+            }
+        ))
+        .unwrap()
+    }
+
+    fn q_exp(mut a: usize, mut b: usize, r: usize) -> usize {
+        let mut res = 1;
+        while b > 0 {
+            if b & 1 != 0 {
+                res = (res * a) % r;
+            }
+            a = (a * a) % r;
+            b >>= 1
+        }
+        res
+    }
+}
+
+mod b2073 {
+    use std::io::{StdinLock, StdoutLock};
+
+    use super::*;
+    pub fn in_out(
+        br: &mut BufReader<StdinLock<'static>>,
+        bw: &mut BufWriter<StdoutLock<'static>>,
+        buf: &mut String,
+    ) {
+        br.read_line(buf).unwrap();
+        let mut segs = buf.trim().split_whitespace();
+        let a: usize = segs.next().unwrap().parse().unwrap();
+        let b: usize = segs.next().unwrap().parse().unwrap();
+        let n: usize = segs.next().unwrap().parse().unwrap();
+        if a == b {
+            bw.write_fmt(format_args!("0\n")).unwrap()
+        } else {
+            let mut div = a;
+            let mut res = 0;
+            for _ in 0..n {
+                div *= 10;
+                res = div / b;
+                div = div % b;
+            }
+            bw.write_fmt(format_args!("{}\n", res)).unwrap()
+        }
+    }
+}
+
+mod b2072 {
+    use std::io::{StdinLock, StdoutLock};
+
+    use super::*;
+    pub fn in_out(
+        br: &mut BufReader<StdinLock<'static>>,
+        bw: &mut BufWriter<StdoutLock<'static>>,
+        buf: &mut String,
+    ) {
+        br.read_line(buf).unwrap();
+        let n: usize = buf.trim().parse().unwrap();
+        bw.write_fmt(format_args!("{}\n", (1..=n).sum::<usize>()))
+            .unwrap()
+    }
+}
+
+mod b2071 {
+    use std::io::{StdinLock, StdoutLock};
+
+    use super::*;
+    pub fn in_out(
+        br: &mut BufReader<StdinLock<'static>>,
+        bw: &mut BufWriter<StdoutLock<'static>>,
+        buf: &mut String,
+    ) {
+        br.read_line(buf).unwrap();
+        let mut segs = buf.trim().split_whitespace();
+        let a: usize = segs.next().unwrap().parse().unwrap();
+        let b: usize = segs.next().unwrap().parse().unwrap();
+        let c: usize = segs.next().unwrap().parse().unwrap();
+        let mut res = 2;
+        loop {
+            let r1 = a % res;
+            let r2 = b % res;
+            let r3 = c % res;
+            if r1 == r2 && r2 == r3 {
+                bw.write_fmt(format_args!("{}\n", res)).unwrap();
+                return;
+            }
+            res += 1;
+        }
+    }
 }
 
 mod b2070 {
