@@ -2,6 +2,8 @@
 
 use std::cmp::Ordering;
 
+use rand::{Rng, thread_rng};
+
 /// 固定大小的堆结构，内部使用一个Vec来保存数据
 pub struct Heap<T: Copy + PartialEq + Eq + PartialOrd + Ord> {
     arr: Vec<T>,
@@ -128,6 +130,69 @@ where
     }
 }
 
+pub struct Diagram {
+    pub head: Vec<usize>,
+    pub next: Vec<usize>,
+    pub to: Vec<usize>,
+    cnt: usize,
+}
+
+impl Diagram {
+    pub fn new(n: usize, m: usize) -> Self {
+        Self {
+            head: vec![0; n + 1],
+            next: vec![0; m + 1],
+            to: vec![0; m + 1],
+            cnt: 1,
+        }
+    }
+
+    pub fn add_edge(&mut self, p1: usize, p2: usize) {
+        self.next[self.cnt] = self.head[p1];
+        self.head[p1] = self.cnt;
+        self.to[self.cnt] = p2;
+        self.cnt += 1;
+    }
+}
+
+// 生成一棵起始节点编号为root，节点数为n的树
+fn gen_tree(root: usize, n: usize) -> Option<Vec<(usize, usize)>> {
+    if n <= 1 {
+        return None;
+    }
+    let mut res = vec![];
+    let n = n - 1; // 剩余可用节点数
+    // 1/2 2,1/6,3,1/6,4,1/6 5
+    // let mut rng = thread_rng();
+    // if rng.gen_ratio(1, 2) {
+    let p1 = root + 1;
+    let p1n = n / 2;
+    if p1n > 0 {
+        res.push((root, p1));
+        if let Some(mut r1) = gen_tree(p1, p1n) {
+            res.append(&mut r1);
+        }
+    }
+    let p2 = p1 + p1n;
+    let p2n = n - p1n;
+    if p2n > 0 {
+        res.push((root, p2));
+        if let Some(mut r2) = gen_tree(p2, p2n) {
+            res.append(&mut r2);
+        }
+    }
+    // } else {
+    //     if rng.gen_ratio(1, 3) {
+    //         // 3
+    //     } else if rng.gen_ratio(1, 2) {
+    //         // 4
+    //     } else {
+    //         // 5
+    //     }
+    // }
+    Some(res)
+}
+
 #[cfg(test)]
 mod tests {
     use rand::{Rng, thread_rng};
@@ -155,5 +220,14 @@ mod tests {
             res,
             "ori after sorted {ori:?}, heap sort {res:?}"
         )
+    }
+
+    #[test]
+    fn test_gen_tree() {
+        let r = gen_tree(1, 8);
+        assert!(r.is_some());
+        for line in &r.unwrap() {
+            println!("{} {}", line.0, line.1)
+        }
     }
 }
