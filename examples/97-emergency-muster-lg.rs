@@ -3,6 +3,8 @@ use std::{
     usize,
 };
 
+use zuo_algo::Diagram;
+
 fn main() {
     let mut br = BufReader::new(io::stdin().lock());
     let mut bw = BufWriter::new(io::stdout().lock());
@@ -41,31 +43,6 @@ fn least_pow2(n: usize) -> usize {
         res += 1
     }
     res
-}
-
-pub struct Diagram {
-    pub head: Vec<usize>,
-    pub next: Vec<usize>,
-    pub to: Vec<usize>,
-    cnt: usize,
-}
-
-impl Diagram {
-    pub fn new(n: usize, m: usize) -> Self {
-        Self {
-            head: vec![0; n + 1],
-            next: vec![0; m + 1],
-            to: vec![0; m + 1],
-            cnt: 1,
-        }
-    }
-
-    pub fn add_edge(&mut self, p1: usize, p2: usize) {
-        self.next[self.cnt] = self.head[p1];
-        self.head[p1] = self.cnt;
-        self.to[self.cnt] = p2;
-        self.cnt += 1;
-    }
 }
 
 struct Tree {
