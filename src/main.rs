@@ -10,6 +10,9 @@ mod lc51;
 mod lc80;
 mod lc3719;
 mod lc60;
+mod lc65;
+mod lc68;
+mod lc132;
 
 fn main() {
     println!("跟着左程云学算法!");
