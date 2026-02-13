@@ -17,6 +17,7 @@ mod lc140;
 mod lc154;
 mod lc174;
 mod lc214;
+mod lc220;
 
 fn main() {
     println!("跟着左程云学算法!");
